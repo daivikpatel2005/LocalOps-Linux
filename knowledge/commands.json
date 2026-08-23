@@ -1,0 +1,51 @@
+{
+  "ls": {
+    "description": "List files and directories",
+    "category": "filesystem",
+    "risk": "safe",
+    "read_only": true,
+    "options": {
+      "-l": "Use long listing format with permissions, owner, group, size and modification time",
+      "-a": "Include hidden files and directories",
+      "-h": "Display file sizes in human-readable units"
+    }
+  },
+
+  "df": {
+    "description": "Display filesystem disk space usage",
+    "category": "storage",
+    "risk": "safe",
+    "read_only": true,
+    "options": {
+      "-h": "Display sizes in human-readable units"
+    }
+  },
+
+  "free": {
+    "description": "Display memory and swap usage",
+    "category": "memory",
+    "risk": "safe",
+    "read_only": true,
+    "options": {
+      "-h": "Display sizes in human-readable units"
+    }
+  },
+
+  "uptime": {
+    "description": "Display system uptime and load average",
+    "category": "system",
+    "risk": "safe",
+    "read_only": true,
+    "options": {}
+  },
+
+  "ps": {
+    "description": "Display information about running processes",
+    "category": "process",
+    "risk": "safe",
+    "read_only": true,
+    "options": {
+      "aux": "Show processes from all users in a user-oriented format, including processes without a terminal"
+    }
+  }
+}

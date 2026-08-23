@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.venv/
+venv/
+
+# Environment / secrets
+.env
+.env.*
+
+# Ollama models
+models/
+*.gguf
+
+# LocalOps runtime data
+logs/*
+reports/*
+*.log
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Temporary files
+*.tmp
+*.temp
