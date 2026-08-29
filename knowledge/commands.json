@@ -1,51 +1,292 @@
 {
-  "ls": {
-    "description": "List files and directories",
-    "category": "filesystem",
-    "risk": "safe",
-    "read_only": true,
-    "options": {
-      "-l": "Use long listing format with permissions, owner, group, size and modification time",
-      "-a": "Include hidden files and directories",
-      "-h": "Display file sizes in human-readable units"
+  "schema_version": "1.0",
+  "name": "LocalOps Linux Command Knowledge Base",
+  "description": "Safe, structured capabilities available to the LocalOps troubleshooting agent.",
+
+  "policy": {
+    "allow_unknown_commands": false,
+    "allow_shell_pipelines": false,
+    "allow_command_chaining": false,
+    "require_validation": true,
+    "require_confirmation": true
+  },
+
+  "commands": {
+    "uptime": {
+      "description": "Display system uptime and load average",
+      "category": "system",
+
+      "use_when": [
+        "The system feels slow",
+        "The user reports lag",
+        "The user reports high system load",
+        "The agent needs to investigate current system load"
+      ],
+
+      "risk": "safe",
+      "read_only": true,
+      "requires_sudo": false,
+      "requires_confirmation": true,
+
+      "options": {},
+
+      "combinations": {
+        "allowed": false,
+        "examples": ["uptime"]
+      },
+
+      "output": {
+        "type": "system_load",
+        "important_fields": ["uptime", "users", "load_average"]
+      }
+    },
+
+    "free": {
+      "description": "Display RAM and swap memory usage",
+      "category": "memory",
+
+      "use_when": [
+        "The system feels slow",
+        "Applications are freezing",
+        "The user reports high memory usage",
+        "The agent needs to investigate RAM pressure",
+        "The agent needs to investigate swap usage"
+      ],
+
+      "risk": "safe",
+      "read_only": true,
+      "requires_sudo": false,
+      "requires_confirmation": true,
+
+      "options": {
+        "-h": {
+          "description": "Display memory sizes in human-readable units",
+          "type": "flag",
+          "combinable": true
+        }
+      },
+
+      "combinations": {
+        "allowed": true,
+        "examples": ["free", "free -h"]
+      },
+
+      "output": {
+        "type": "memory_usage",
+        "important_fields": [
+          "total_memory",
+          "used_memory",
+          "free_memory",
+          "available_memory",
+          "total_swap",
+          "used_swap",
+          "free_swap"
+        ]
+      }
+    },
+
+    "df": {
+      "description": "Display filesystem disk space usage",
+      "category": "storage",
+
+      "use_when": [
+        "The system feels slow",
+        "The user reports low disk space",
+        "The user reports that storage is full",
+        "The agent needs to investigate filesystem capacity"
+      ],
+
+      "risk": "safe",
+      "read_only": true,
+      "requires_sudo": false,
+      "requires_confirmation": true,
+
+      "options": {
+        "-h": {
+          "description": "Display disk sizes in human-readable units",
+          "type": "flag",
+          "combinable": true
+        }
+      },
+
+      "combinations": {
+        "allowed": true,
+        "examples": ["df", "df -h"]
+      },
+
+      "output": {
+        "type": "filesystem_usage",
+        "important_fields": [
+          "filesystem",
+          "size",
+          "used",
+          "available",
+          "use_percentage",
+          "mountpoint"
+        ]
+      }
+    },
+
+    "ps": {
+      "description": "Display information about running processes",
+      "category": "process",
+
+      "use_when": [
+        "The system feels slow",
+        "The user reports high CPU usage",
+        "The user reports high memory usage",
+        "The agent needs to identify resource-heavy processes"
+      ],
+
+      "risk": "safe",
+      "read_only": true,
+      "requires_sudo": false,
+      "requires_confirmation": true,
+
+      "options": {
+        "aux": {
+          "description": "Show processes from all users in a user-oriented format",
+          "type": "flag",
+          "combinable": false
+        }
+      },
+
+      "combinations": {
+        "allowed": true,
+        "examples": ["ps", "ps aux"]
+      },
+
+      "output": {
+        "type": "process_list",
+        "important_fields": ["pid", "user", "cpu", "memory", "command"]
+      }
+    },
+
+    "ls": {
+      "description": "List files and directories",
+      "category": "filesystem",
+
+      "use_when": [
+        "The user wants to inspect files",
+        "The agent needs to inspect a directory",
+        "The agent needs to verify whether files exist"
+      ],
+
+      "risk": "safe",
+      "read_only": true,
+      "requires_sudo": false,
+      "requires_confirmation": true,
+
+      "options": {
+        "-l": {
+          "description": "Use long listing format",
+          "type": "flag",
+          "combinable": true
+        },
+        "-a": {
+          "description": "Include hidden files and directories",
+          "type": "flag",
+          "combinable": true
+        },
+        "-h": {
+          "description": "Display file sizes in human-readable units",
+          "type": "flag",
+          "combinable": true,
+          "requires": ["-l"]
+        }
+      },
+
+      "combinations": {
+        "allowed": true,
+        "examples": ["ls", "ls -l", "ls -a", "ls -la", "ls -lh", "ls -lah"]
+      },
+
+      "output": {
+        "type": "file_listing"
+      }
     }
   },
 
-  "df": {
-    "description": "Display filesystem disk space usage",
-    "category": "storage",
-    "risk": "safe",
-    "read_only": true,
-    "options": {
-      "-h": "Display sizes in human-readable units"
-    }
-  },
+  "workflows": {
+    "system_slow": {
+      "description": "Investigate a generally slow Linux system",
 
-  "free": {
-    "description": "Display memory and swap usage",
-    "category": "memory",
-    "risk": "safe",
-    "read_only": true,
-    "options": {
-      "-h": "Display sizes in human-readable units"
-    }
-  },
+      "triggers": [
+        "system is slow",
+        "laptop is slow",
+        "computer is slow",
+        "Ubuntu is slow",
+        "system is lagging",
+        "everything is slow"
+      ],
 
-  "uptime": {
-    "description": "Display system uptime and load average",
-    "category": "system",
-    "risk": "safe",
-    "read_only": true,
-    "options": {}
-  },
+      "candidate_commands": ["uptime", "free", "df", "ps"],
 
-  "ps": {
-    "description": "Display information about running processes",
-    "category": "process",
-    "risk": "safe",
-    "read_only": true,
-    "options": {
-      "aux": "Show processes from all users in a user-oriented format, including processes without a terminal"
+      "decision_rules": [
+        {
+          "condition": "load average is high",
+          "possible_problem": "High system load"
+        },
+        {
+          "condition": "available memory is low",
+          "possible_problem": "Memory pressure"
+        },
+        {
+          "condition": "swap usage is high",
+          "possible_problem": "Memory pressure or insufficient RAM"
+        },
+        {
+          "condition": "filesystem usage is very high",
+          "possible_problem": "Low disk space"
+        },
+        {
+          "condition": "a process has unusually high CPU usage",
+          "possible_problem": "CPU-heavy process"
+        },
+        {
+          "condition": "a process has unusually high memory usage",
+          "possible_problem": "Memory-heavy process"
+        }
+      ]
+    },
+
+    "disk_space": {
+      "description": "Investigate low disk space",
+
+      "triggers": [
+        "disk is full",
+        "storage is low",
+        "not enough space",
+        "root partition is full"
+      ],
+
+      "candidate_commands": ["df"]
+    },
+
+    "memory_problem": {
+      "description": "Investigate memory-related problems",
+
+      "triggers": [
+        "RAM is full",
+        "system freezes",
+        "applications freeze",
+        "too much memory usage"
+      ],
+
+      "candidate_commands": ["free", "ps"]
+    },
+
+    "process_problem": {
+      "description": "Investigate resource-heavy processes",
+
+      "triggers": [
+        "CPU is high",
+        "one application is using too much CPU",
+        "one application is using too much RAM",
+        "which process is causing the problem"
+      ],
+
+      "candidate_commands": ["ps", "uptime"]
     }
   }
 }

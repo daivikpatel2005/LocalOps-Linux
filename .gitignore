@@ -1,29 +1,29 @@
 # Python
 __pycache__/
 *.py[cod]
-*.so
+*$py.class
+
+# Virtual environments
 .venv/
 venv/
+env/
+
+# Logs
+logs/*
+!logs/.gitkeep
+
+# Reports
+reports/*
+!reports/.gitkeep
 
 # Environment / secrets
 .env
 .env.*
 
-# Ollama models
-models/
-*.gguf
-
-# LocalOps runtime data
-logs/*
-reports/*
-*.log
-
-# OS/editor files
-.DS_Store
-Thumbs.db
+# IDE
 .vscode/
 .idea/
 
-# Temporary files
-*.tmp
-*.temp
+# OS
+.DS_Store
+Thumbs.db
