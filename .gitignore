@@ -1,29 +1,114 @@
+# ==========================================
 # Python
+# ==========================================
 __pycache__/
 *.py[cod]
 *$py.class
+*.pyo
 
+# ==========================================
 # Virtual environments
+# ==========================================
 .venv/
 venv/
 env/
 
+# ==========================================
+# Build and distribution
+# ==========================================
+build/
+dist/
+*.egg-info/
+
+# ==========================================
+# SQLite databases and runtime data
+# ==========================================
+data/*.db
+data/*.db-*
+data/*.sqlite
+data/*.sqlite3
+data/*.sqlite-*
+
+# SQLite journal, WAL, and shared-memory files
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
+
+# ==========================================
+# Backups and temporary files
+# ==========================================
+backups/*
+!backups/.gitkeep
+
+*.bak
+*.backup
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# ==========================================
 # Logs
+# ==========================================
 logs/*
 !logs/.gitkeep
 
-# Reports
+*.log
+
+# ==========================================
+# Generated reports
+# ==========================================
 reports/*
 !reports/.gitkeep
 
-# Environment / secrets
+# ==========================================
+# Environment variables and secrets
+# ==========================================
 .env
 .env.*
+!.env.example
 
-# IDE
+# ==========================================
+# Local configuration
+# Ignore local settings, but retain examples.
+# ==========================================
+config/*
+!config/.gitkeep
+!config/*.example
+!config/*.example.*
+!config/*.template
+
+# ==========================================
+# IDEs and editors
+# ==========================================
 .vscode/
 .idea/
+*.code-workspace
 
-# OS
+# ==========================================
+# Operating system
+# ==========================================
 .DS_Store
 Thumbs.db
+.directory
+
+# ==========================================
+# Test and coverage artifacts
+# ==========================================
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# ==========================================
+# Local model and application artifacts
+# ==========================================
+*.gguf
+*.safetensors
+*.onnx

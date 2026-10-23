@@ -1,137 +1,139 @@
-import shlex
 import subprocess
-import time
-from datetime import datetime
 
 
-def execute_command(command):
+class ExecutionError(Exception):
+    """Raised when a command cannot be executed safely."""
+    pass
+
+
+def execute_command(command: dict) -> dict:
     """
-    Execute one validated command.
+    Execute one command that has already passed validation.
 
-    IMPORTANT:
-    This function expects a command that has already passed
-    validator.validate_plan().
+    The executor accepts ONLY the normalized command dictionary
+    returned by validator.validate_plan().
     """
 
-    if not isinstance(command, str):
-        raise ValueError(
-            "Command must be a string."
+    if not isinstance(command, dict):
+        raise ExecutionError(
+            "Invalid command object."
         )
 
-    if ";" in command or "&&" in command or "||" in command:
-        raise ValueError(
-            "Command chaining is not allowed."
+    command_id = command.get("command_id")
+    shell_command = command.get("command")
+
+    if not command_id:
+        raise ExecutionError(
+            "Missing command_id."
         )
 
-    if "|" in command:
-        raise ValueError(
-            "Shell pipelines are not allowed."
+    if not shell_command:
+        raise ExecutionError(
+            f"Command '{command_id}' has no command."
         )
 
-    args = shlex.split(command)
-
-    if not args:
-        raise ValueError(
-            "Cannot execute an empty command."
+    # Defense in depth:
+    # Executor only accepts commands containing
+    # validator-generated metadata.
+    if "risk" not in command:
+        raise ExecutionError(
+            f"Command '{command_id}' does not contain "
+            "validation metadata."
         )
 
-    started = time.monotonic()
+    if command.get("read_only") is not True:
+        raise ExecutionError(
+            f"Command '{command_id}' is not read-only. "
+            "Non-read-only execution is disabled."
+        )
+
+    if command.get("requires_sudo") is True:
+        raise ExecutionError(
+            f"Command '{command_id}' requires sudo. "
+            "Sudo execution is disabled."
+        )
+
+    # --------------------------------------------------
+    # Convert validated command to argv
+    # --------------------------------------------------
+
+    try:
+        argv = shell_command.split()
+
+    except Exception as error:
+        raise ExecutionError(
+            f"Could not parse command "
+            f"'{shell_command}': {error}"
+        ) from error
+
+    if not argv:
+        raise ExecutionError(
+            "Empty command."
+        )
+
+    # --------------------------------------------------
+    # Execute
+    # --------------------------------------------------
 
     try:
         result = subprocess.run(
-            args,
+            argv,
             capture_output=True,
             text=True,
             timeout=30,
-            check=False
+            check=False,
         )
-
-        duration = time.monotonic() - started
-
-        return {
-            "command": command,
-            "started_at": datetime.now().isoformat(),
-            "duration_seconds": round(
-                duration,
-                3
-            ),
-            "return_code": result.returncode,
-            "stdout": result.stdout,
-            "stderr": result.stderr,
-            "success": result.returncode == 0
-        }
 
     except subprocess.TimeoutExpired as error:
-        duration = time.monotonic() - started
+        raise ExecutionError(
+            f"Command timed out after 30 seconds: "
+            f"{shell_command}"
+        ) from error
 
-        return {
-            "command": command,
-            "started_at": datetime.now().isoformat(),
-            "duration_seconds": round(
-                duration,
-                3
-            ),
-            "return_code": None,
-            "stdout": error.stdout or "",
-            "stderr": "Command timed out.",
-            "success": False
-        }
+    except OSError as error:
+        raise ExecutionError(
+            f"Failed to execute "
+            f"'{shell_command}': {error}"
+        ) from error
+
+    # --------------------------------------------------
+    # Return normalized execution result
+    # --------------------------------------------------
+
+    return {
+        "command_id": command_id,
+        "command": shell_command,
+        "return_code": result.returncode,
+        "stdout": result.stdout.strip(),
+        "stderr": result.stderr.strip(),
+        "success": result.returncode == 0,
+    }
 
 
-def execute_plan(validated_commands):
+def execute_plan(
+    commands: list[dict],
+    confirm: bool = False,
+) -> list[dict]:
     """
-    Execute a validated plan after explicit user approval.
+    Execute a validated plan.
+
+    Execution is disabled unless confirm=True.
     """
 
-    if not validated_commands:
-        print("\nNo commands to execute.")
-        return []
-
-    print("\n")
-    print("─────────────────────────────────────")
-    print("EXECUTION")
-    print("─────────────────────────────────────")
-
-    for index, item in enumerate(
-        validated_commands,
-        1
-    ):
-        print(
-            f"{index}. $ {item['command']}"
+    if not isinstance(commands, list):
+        raise ExecutionError(
+            "Commands must be a list."
         )
 
-    print("─────────────────────────────────────")
-
-    answer = input(
-        "Execute this plan? [y/N]: "
-    ).strip().lower()
-
-    if answer not in ("y", "yes"):
-        print("\nExecution cancelled.")
-        return []
+    if not confirm:
+        raise ExecutionError(
+            "Execution requires explicit confirmation."
+        )
 
     results = []
 
-    for item in validated_commands:
-        command = item["command"]
-
-        print(f"\n$ {command}")
-
+    for command in commands:
         result = execute_command(command)
-
         results.append(result)
-
-        if result["stdout"]:
-            print(result["stdout"], end="")
-
-        if result["stderr"]:
-            print(
-                result["stderr"],
-                end=""
-            )
-
-        print(
-            f"[exit code: {result['return_code']}]"
-        )
 
     return results

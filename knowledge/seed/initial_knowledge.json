@@ -220,7 +220,24 @@
         "everything is slow"
       ],
 
-      "candidate_commands": ["uptime", "free", "df", "ps"],
+      "candidate_commands": [
+        {
+          "command_id": "uptime",
+          "options": []
+        },
+        {
+          "command_id": "free",
+          "options": ["-h"]
+        },
+        {
+          "command_id": "df",
+          "options": ["-h"]
+        },
+        {
+          "command_id": "ps",
+          "options": ["aux"]
+        }
+      ],
 
       "decision_rules": [
         {

@@ -1,32 +1,87 @@
-from .executor import execute_command
+from app.executor import execute_plan
+from app.validator import validate_plan
 
 
-def main():
-    print("LocalOps Executor Test")
+plan = {
+    "problem": "Test system diagnostics",
+    "assessment": "Testing safe read-only diagnostic commands.",
+    "plan": [
+        {
+            "command_id": "uptime",
+            "options": [],
+            "purpose": "Check system load",
+        },
+        {
+            "command_id": "free",
+            "options": ["-h"],
+            "purpose": "Check RAM and swap usage",
+        },
+        {
+            "command_id": "df",
+            "options": ["-h"],
+            "purpose": "Check filesystem capacity",
+        },
+        {
+            "command_id": "ps",
+            "options": ["aux"],
+            "purpose": "Inspect running processes",
+        },
+    ],
+}
+
+
+print()
+print("─────────────────────────────────────")
+print("LocalOps Executor Test")
+print("─────────────────────────────────────")
+
+
+try:
+    validated_commands = validate_plan(plan)
+
+    print()
+    print("PLAN VALIDATED")
+    print("Executing validated commands...")
     print()
 
-    result = execute_command(
-        "uptime"
+    results = execute_plan(
+        validated_commands,
+        confirm=True,
     )
 
-    print("Command:")
-    print(result["command"])
+    for index, result in enumerate(results, 1):
 
-    print("\nExit code:")
-    print(result["return_code"])
+        print(
+            f"[{index}/{len(results)}] "
+            f"${result['command']}"
+        )
 
-    print("\nOutput:")
-    print(result["stdout"])
+        print(
+            f"Exit code: {result['exit_code']}"
+        )
 
-    if result["stderr"]:
-        print("\nError:")
-        print(result["stderr"])
+        print(
+            f"Success: {result['success']}"
+        )
 
-    print(
-        f"\nExecution time: "
-        f"{result['duration_seconds']} seconds"
-    )
+        if result["stdout"]:
+            print()
+            print("Output:")
+            print(result["stdout"])
+
+        if result["stderr"]:
+            print()
+            print("Error:")
+            print(result["stderr"])
+
+        print()
+
+except Exception as error:
+    print()
+    print("EXECUTION FAILED")
+    print(error)
 
 
-if __name__ == "__main__":
-    main()
+print("─────────────────────────────────────")
+print("Executor test complete")
+print("─────────────────────────────────────")

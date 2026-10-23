@@ -9,7 +9,6 @@ def print_plan(plan, validated_commands):
     print("─────────────────────────────────────")
     print("PLAN")
     print("─────────────────────────────────────")
-
     print("\nProblem:")
     print(plan["problem"])
 
