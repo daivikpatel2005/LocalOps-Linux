@@ -1,29 +1,131 @@
-# Python
+# ==============================================================================
+# LocalOps — Comprehensive .gitignore
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. Bytecode & Python Runtime Caches
+# ------------------------------------------------------------------------------
 __pycache__/
 *.py[cod]
 *$py.class
+*.so
+.Python
+*.pyo
 
-# Virtual environments
+# ------------------------------------------------------------------------------
+# 2. Build, Distribution & Packaging Artifacts
+# ------------------------------------------------------------------------------
+build/
+app/build/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+*.spec
+
+# ------------------------------------------------------------------------------
+# 3. Virtual Environments
+# ------------------------------------------------------------------------------
 .venv/
 venv/
 env/
+ENV/
+env.bak/
+venv.bak/
+.env.bak/
 
-# Logs
+# ------------------------------------------------------------------------------
+# 4. Testing, Coverage & Linters
+# ------------------------------------------------------------------------------
+.pytest_cache/
+.coverage
+.coverage.*
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+htmlcov/
+.tox/
+.nox/
+.mypy_cache/
+.ruff_cache/
+.dmypy.json
+dmypy.json
+
+# ------------------------------------------------------------------------------
+# 5. Local Databases & Ephemeral Runtime State
+# ------------------------------------------------------------------------------
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-wal
+*.db-shm
+knowledge/*.db
+knowledge/*.sqlite3
+
+# ------------------------------------------------------------------------------
+# 6. Logs, Crash Dumps & Diagnostic Output
+# ------------------------------------------------------------------------------
 logs/*
 !logs/.gitkeep
-
-# Reports
 reports/*
 !reports/.gitkeep
+*.log
+*.log.*
 
-# Environment / secrets
+# ------------------------------------------------------------------------------
+# 7. Environment Variables, Secrets & Credentials
+# ------------------------------------------------------------------------------
 .env
 .env.*
+!.env.example
+*.pem
+*.key
+*.cert
+*.crt
 
-# IDE
+# ------------------------------------------------------------------------------
+# 8. IDE, Editor & Tooling Settings
+# ------------------------------------------------------------------------------
 .vscode/
 .idea/
+*.swp
+*.swo
+*~
+*.sublime-project
+*.sublime-workspace
+*.code-workspace
 
-# OS
+# ------------------------------------------------------------------------------
+# 9. Operating System Metadata
+# ------------------------------------------------------------------------------
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
+desktop.ini
+
+# ------------------------------------------------------------------------------
+# 10. Local Scratch, Temporary Dirs & Internal Dev Checklists
+# (Preserved locally on disk, but ignored from Git commits)
+# ------------------------------------------------------------------------------
+LocalOps_Development_Testing_Safety_Checklist.md
+scratch/
+tmp/
+temp/

@@ -1,8 +1,7 @@
 {
   "schema_version": "1.0",
   "name": "LocalOps Linux Command Knowledge Base",
-  "description": "Safe, structured capabilities available to the LocalOps troubleshooting agent.",
-
+  "description": "Safe, structured diagnostic capabilities for common Linux troubleshooting problems.",
   "policy": {
     "allow_unknown_commands": false,
     "allow_shell_pipelines": false,
@@ -10,41 +9,39 @@
     "require_validation": true,
     "require_confirmation": true
   },
-
   "commands": {
     "uptime": {
       "description": "Display system uptime and load average",
       "category": "system",
-
       "use_when": [
         "The system feels slow",
         "The user reports lag",
         "The user reports high system load",
         "The agent needs to investigate current system load"
       ],
-
       "risk": "safe",
       "read_only": true,
       "requires_sudo": false,
       "requires_confirmation": true,
-
       "options": {},
-
       "combinations": {
         "allowed": false,
-        "examples": ["uptime"]
+        "examples": [
+          "uptime"
+        ]
       },
-
       "output": {
         "type": "system_load",
-        "important_fields": ["uptime", "users", "load_average"]
+        "important_fields": [
+          "uptime",
+          "users",
+          "load_average"
+        ]
       }
     },
-
     "free": {
       "description": "Display RAM and swap memory usage",
       "category": "memory",
-
       "use_when": [
         "The system feels slow",
         "Applications are freezing",
@@ -52,12 +49,10 @@
         "The agent needs to investigate RAM pressure",
         "The agent needs to investigate swap usage"
       ],
-
       "risk": "safe",
       "read_only": true,
       "requires_sudo": false,
       "requires_confirmation": true,
-
       "options": {
         "-h": {
           "description": "Display memory sizes in human-readable units",
@@ -65,12 +60,13 @@
           "combinable": true
         }
       },
-
       "combinations": {
         "allowed": true,
-        "examples": ["free", "free -h"]
+        "examples": [
+          "free",
+          "free -h"
+        ]
       },
-
       "output": {
         "type": "memory_usage",
         "important_fields": [
@@ -84,36 +80,40 @@
         ]
       }
     },
-
     "df": {
       "description": "Display filesystem disk space usage",
       "category": "storage",
-
       "use_when": [
         "The system feels slow",
         "The user reports low disk space",
         "The user reports that storage is full",
         "The agent needs to investigate filesystem capacity"
       ],
-
       "risk": "safe",
       "read_only": true,
       "requires_sudo": false,
       "requires_confirmation": true,
-
       "options": {
         "-h": {
           "description": "Display disk sizes in human-readable units",
           "type": "flag",
           "combinable": true
+        },
+        "-i": {
+          "description": "List inode information instead of block usage",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
         }
       },
-
       "combinations": {
         "allowed": true,
-        "examples": ["df", "df -h"]
+        "examples": [
+          "df",
+          "df -h",
+          "df -i"
+        ]
       },
-
       "output": {
         "type": "filesystem_usage",
         "important_fields": [
@@ -126,23 +126,19 @@
         ]
       }
     },
-
     "ps": {
       "description": "Display information about running processes",
       "category": "process",
-
       "use_when": [
         "The system feels slow",
         "The user reports high CPU usage",
         "The user reports high memory usage",
         "The agent needs to identify resource-heavy processes"
       ],
-
       "risk": "safe",
       "read_only": true,
       "requires_sudo": false,
       "requires_confirmation": true,
-
       "options": {
         "aux": {
           "description": "Show processes from all users in a user-oriented format",
@@ -150,33 +146,36 @@
           "combinable": false
         }
       },
-
       "combinations": {
         "allowed": true,
-        "examples": ["ps", "ps aux"]
+        "examples": [
+          "ps",
+          "ps aux"
+        ]
       },
-
       "output": {
         "type": "process_list",
-        "important_fields": ["pid", "user", "cpu", "memory", "command"]
+        "important_fields": [
+          "pid",
+          "user",
+          "cpu",
+          "memory",
+          "command"
+        ]
       }
     },
-
     "ls": {
       "description": "List files and directories",
       "category": "filesystem",
-
       "use_when": [
         "The user wants to inspect files",
         "The agent needs to inspect a directory",
         "The agent needs to verify whether files exist"
       ],
-
       "risk": "safe",
       "read_only": true,
       "requires_sudo": false,
       "requires_confirmation": true,
-
       "options": {
         "-l": {
           "description": "Use long listing format",
@@ -192,36 +191,1228 @@
           "description": "Display file sizes in human-readable units",
           "type": "flag",
           "combinable": true,
-          "requires": ["-l"]
+          "requires": [
+            "-l"
+          ]
         }
       },
-
       "combinations": {
         "allowed": true,
-        "examples": ["ls", "ls -l", "ls -a", "ls -la", "ls -lh", "ls -lah"]
+        "examples": [
+          "ls",
+          "ls -l",
+          "ls -a",
+          "ls -la",
+          "ls -lh",
+          "ls -lah"
+        ]
       },
-
       "output": {
         "type": "file_listing"
       }
+    },
+    "whoami": {
+      "description": "Show the current username",
+      "category": "identity",
+      "use_when": [
+        "identify current user"
+      ],
+      "risk": "safe",
+      "read_only": true,
+      "requires_sudo": false,
+      "requires_confirmation": true,
+      "options": {},
+      "combinations": {
+        "allowed": false,
+        "examples": [
+          "whoami"
+        ]
+      },
+      "output": {
+        "type": "user",
+        "important_fields": []
+      }
+    },
+    "id": {
+      "description": "Show current user and group IDs",
+      "category": "identity",
+      "use_when": [
+        "permission or group troubleshooting"
+      ],
+      "risk": "safe",
+      "read_only": true,
+      "requires_sudo": false,
+      "requires_confirmation": true,
+      "options": {},
+      "combinations": {
+        "allowed": false,
+        "examples": [
+          "id"
+        ]
+      },
+      "output": {
+        "type": "user_groups",
+        "important_fields": []
+      }
+    },
+    "uname": {
+      "description": "Show kernel and architecture information",
+      "category": "system",
+      "use_when": [
+        "kernel or system information"
+      ],
+      "risk": "safe",
+      "read_only": true,
+      "requires_sudo": false,
+      "requires_confirmation": true,
+      "options": {
+        "-a": {
+          "description": "Show all uname information",
+          "type": "token",
+          "combinable": true
+        }
+      },
+      "combinations": {
+        "allowed": true,
+        "examples": [
+          "uname",
+          "uname -a"
+        ]
+      },
+      "output": {
+        "type": "kernel",
+        "important_fields": []
+      }
+    },
+    "lsblk": {
+      "description": "List block devices and filesystems",
+      "category": "storage",
+      "use_when": [
+        "disk or partition problems"
+      ],
+      "risk": "safe",
+      "read_only": true,
+      "requires_sudo": false,
+      "requires_confirmation": true,
+      "options": {
+        "-f": {
+          "description": "Include filesystem information",
+          "type": "token",
+          "combinable": true
+        }
+      },
+      "combinations": {
+        "allowed": true,
+        "examples": [
+          "lsblk",
+          "lsblk -f"
+        ]
+      },
+      "output": {
+        "type": "block_devices",
+        "important_fields": []
+      }
+    },
+    "findmnt": {
+      "description": "Show mounted filesystems",
+      "category": "storage",
+      "use_when": [
+        "mount or filesystem problems"
+      ],
+      "risk": "safe",
+      "read_only": true,
+      "requires_sudo": false,
+      "requires_confirmation": true,
+      "options": {},
+      "combinations": {
+        "allowed": false,
+        "examples": [
+          "findmnt"
+        ]
+      },
+      "output": {
+        "type": "mounts",
+        "important_fields": []
+      }
+    },
+    "systemctl": {
+      "description": "List failed system services without changing them",
+      "category": "services",
+      "use_when": [
+        "failed service investigation"
+      ],
+      "risk": "safe",
+      "read_only": true,
+      "requires_sudo": false,
+      "requires_confirmation": true,
+      "options": {
+        "--failed": {
+          "description": "Show failed units",
+          "type": "token",
+          "combinable": true
+        },
+        "--no-pager": {
+          "description": "Avoid interactive pager",
+          "type": "token",
+          "combinable": true
+        },
+        "--user": {
+          "description": "Inspect user services",
+          "type": "token",
+          "combinable": true
+        }
+      },
+      "combinations": {
+        "allowed": true,
+        "examples": [
+          "systemctl --failed --no-pager",
+          "systemctl --user --failed --no-pager"
+        ]
+      },
+      "output": {
+        "type": "failed_services",
+        "important_fields": []
+      }
+    },
+    "journalctl": {
+      "description": "Show recent current-boot errors; logs may contain private information",
+      "category": "logs",
+      "use_when": [
+        "system errors, service errors, application crashes"
+      ],
+      "risk": "safe",
+      "read_only": true,
+      "requires_sudo": false,
+      "requires_confirmation": true,
+      "options": {
+        "-p": {
+          "description": "Priority selector",
+          "type": "token",
+          "combinable": true
+        },
+        "err": {
+          "description": "Error priority",
+          "type": "token",
+          "combinable": true
+        },
+        "-b": {
+          "description": "Current boot only",
+          "type": "token",
+          "combinable": true
+        },
+        "-n": {
+          "description": "Limit entry count",
+          "type": "token",
+          "combinable": true
+        },
+        "50": {
+          "description": "At most 50 entries",
+          "type": "token",
+          "combinable": true
+        },
+        "--no-pager": {
+          "description": "Avoid interactive pager",
+          "type": "token",
+          "combinable": true
+        },
+        "-k": {
+          "description": "Show kernel messages (dmesg equivalent)",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
+        }
+      },
+      "combinations": {
+        "allowed": true,
+        "examples": [
+          "journalctl -p err -b -n 50 --no-pager",
+          "journalctl -k"
+        ]
+      },
+      "output": {
+        "type": "journal_errors",
+        "important_fields": []
+      }
+    },
+    "ip": {
+      "description": "Inspect network interfaces and routes",
+      "category": "network",
+      "use_when": [
+        "network connectivity problems"
+      ],
+      "risk": "safe",
+      "read_only": true,
+      "requires_sudo": false,
+      "requires_confirmation": true,
+      "options": {
+        "-brief": {
+          "description": "Concise output",
+          "type": "token",
+          "combinable": true
+        },
+        "address": {
+          "description": "Show addresses",
+          "type": "token",
+          "combinable": true
+        },
+        "route": {
+          "description": "Show routes",
+          "type": "token",
+          "combinable": true
+        },
+        "link": {
+          "description": "Show link state",
+          "type": "token",
+          "combinable": true
+        },
+        "-br": {
+          "description": "Concise output (short form of -brief)",
+          "type": "token",
+          "combinable": true,
+          "requires": []
+        },
+        "addr": {
+          "description": "Show addresses (short form of address)",
+          "type": "token",
+          "combinable": true,
+          "requires": []
+        },
+        "a": {
+          "description": "Show addresses (short form of address)",
+          "type": "token",
+          "combinable": true,
+          "requires": []
+        }
+      },
+      "combinations": {
+        "allowed": true,
+        "examples": [
+          "ip -brief address",
+          "ip -br address",
+          "ip -br a",
+          "ip address",
+          "ip addr",
+          "ip a",
+          "ip route",
+          "ip link"
+        ]
+      },
+      "output": {
+        "type": "network",
+        "important_fields": []
+      }
+    },
+    "nmcli": {
+      "description": "Inspect NetworkManager device and active connection status",
+      "category": "network",
+      "use_when": [
+        "Wi-Fi or NetworkManager problems"
+      ],
+      "risk": "safe",
+      "read_only": true,
+      "requires_sudo": false,
+      "requires_confirmation": true,
+      "options": {
+        "device": {
+          "description": "Device information",
+          "type": "token",
+          "combinable": true
+        },
+        "status": {
+          "description": "Device status",
+          "type": "token",
+          "combinable": true
+        },
+        "connection": {
+          "description": "Connection profiles",
+          "type": "token",
+          "combinable": true
+        },
+        "show": {
+          "description": "List profiles",
+          "type": "token",
+          "combinable": true
+        },
+        "--active": {
+          "description": "Active connections only",
+          "type": "token",
+          "combinable": true
+        }
+      },
+      "combinations": {
+        "allowed": true,
+        "examples": [
+          "nmcli device status",
+          "nmcli connection show --active"
+        ]
+      },
+      "output": {
+        "type": "networkmanager",
+        "important_fields": []
+      }
+    },
+    "rfkill": {
+      "description": "Inspect wireless radio block state",
+      "category": "wireless",
+      "use_when": [
+        "Wi-Fi or Bluetooth radio blocked"
+      ],
+      "risk": "safe",
+      "read_only": true,
+      "requires_sudo": false,
+      "requires_confirmation": true,
+      "options": {
+        "list": {
+          "description": "List radio devices",
+          "type": "token",
+          "combinable": true
+        }
+      },
+      "combinations": {
+        "allowed": true,
+        "examples": [
+          "rfkill list"
+        ]
+      },
+      "output": {
+        "type": "radio_status",
+        "important_fields": []
+      }
+    },
+    "resolvectl": {
+      "description": "Inspect DNS resolver status",
+      "category": "network",
+      "use_when": [
+        "DNS or name resolution problems"
+      ],
+      "risk": "safe",
+      "read_only": true,
+      "requires_sudo": false,
+      "requires_confirmation": true,
+      "options": {
+        "status": {
+          "description": "Resolver status",
+          "type": "token",
+          "combinable": true
+        }
+      },
+      "combinations": {
+        "allowed": true,
+        "examples": [
+          "resolvectl status"
+        ]
+      },
+      "output": {
+        "type": "dns",
+        "important_fields": []
+      }
+    },
+    "bluetoothctl": {
+      "description": "Inspect Bluetooth controller and devices",
+      "category": "bluetooth",
+      "use_when": [
+        "Bluetooth pairing or disconnection problems"
+      ],
+      "risk": "safe",
+      "read_only": true,
+      "requires_sudo": false,
+      "requires_confirmation": true,
+      "options": {
+        "show": {
+          "description": "Controller status",
+          "type": "token",
+          "combinable": true
+        },
+        "devices": {
+          "description": "Known devices",
+          "type": "token",
+          "combinable": true
+        }
+      },
+      "combinations": {
+        "allowed": true,
+        "examples": [
+          "bluetoothctl show",
+          "bluetoothctl devices"
+        ]
+      },
+      "output": {
+        "type": "bluetooth",
+        "important_fields": []
+      }
+    },
+    "pactl": {
+      "description": "Inspect audio server and audio devices",
+      "category": "audio",
+      "use_when": [
+        "sound or microphone problems"
+      ],
+      "risk": "safe",
+      "read_only": true,
+      "requires_sudo": false,
+      "requires_confirmation": true,
+      "options": {
+        "info": {
+          "description": "Audio server info",
+          "type": "token",
+          "combinable": true
+        },
+        "list": {
+          "description": "List audio objects",
+          "type": "token",
+          "combinable": true
+        },
+        "short": {
+          "description": "Concise output",
+          "type": "token",
+          "combinable": true
+        },
+        "sinks": {
+          "description": "Output devices",
+          "type": "token",
+          "combinable": true
+        },
+        "sources": {
+          "description": "Input devices",
+          "type": "token",
+          "combinable": true
+        }
+      },
+      "combinations": {
+        "allowed": true,
+        "examples": [
+          "pactl info",
+          "pactl list short sinks",
+          "pactl list short sources"
+        ]
+      },
+      "output": {
+        "type": "audio",
+        "important_fields": []
+      }
+    },
+    "timedatectl": {
+      "description": "Inspect time zone and clock synchronization",
+      "category": "time",
+      "use_when": [
+        "wrong system time or time zone"
+      ],
+      "risk": "safe",
+      "read_only": true,
+      "requires_sudo": false,
+      "requires_confirmation": true,
+      "options": {
+        "status": {
+          "description": "Show time status",
+          "type": "token",
+          "combinable": true
+        }
+      },
+      "combinations": {
+        "allowed": true,
+        "examples": [
+          "timedatectl status"
+        ]
+      },
+      "output": {
+        "type": "time_status",
+        "important_fields": []
+      }
+    },
+    "dpkg": {
+      "description": "Audit incomplete package states",
+      "category": "packages",
+      "use_when": [
+        "APT or dpkg problems"
+      ],
+      "risk": "safe",
+      "read_only": true,
+      "requires_sudo": false,
+      "requires_confirmation": true,
+      "options": {
+        "--audit": {
+          "description": "Audit package state",
+          "type": "token",
+          "combinable": true
+        }
+      },
+      "combinations": {
+        "allowed": true,
+        "examples": [
+          "dpkg --audit"
+        ]
+      },
+      "output": {
+        "type": "package_audit",
+        "important_fields": []
+      }
+    },
+    "apt-get": {
+      "description": "Check package dependency consistency without installing packages",
+      "category": "packages",
+      "use_when": [
+        "broken package dependencies"
+      ],
+      "risk": "safe",
+      "read_only": true,
+      "requires_sudo": false,
+      "requires_confirmation": true,
+      "options": {
+        "check": {
+          "description": "Check dependencies without installing or removing packages",
+          "type": "token",
+          "combinable": true
+        }
+      },
+      "combinations": {
+        "allowed": true,
+        "examples": [
+          "apt-get check"
+        ]
+      },
+      "output": {
+        "type": "dependencies",
+        "important_fields": []
+      }
+    },
+    "apt": {
+      "description": "List upgradable packages without applying upgrades",
+      "category": "packages",
+      "use_when": [
+        "check available package upgrades"
+      ],
+      "risk": "safe",
+      "read_only": true,
+      "requires_sudo": false,
+      "requires_confirmation": true,
+      "options": {
+        "list": {
+          "description": "List packages",
+          "type": "token",
+          "combinable": true
+        },
+        "--upgradable": {
+          "description": "Upgradable packages only",
+          "type": "token",
+          "combinable": true
+        }
+      },
+      "combinations": {
+        "allowed": true,
+        "examples": [
+          "apt list --upgradable"
+        ]
+      },
+      "output": {
+        "type": "upgrades",
+        "important_fields": []
+      }
+    },
+    "loginctl": {
+      "description": "List login sessions",
+      "category": "login",
+      "use_when": [
+        "login session problems"
+      ],
+      "risk": "safe",
+      "read_only": true,
+      "requires_sudo": false,
+      "requires_confirmation": true,
+      "options": {
+        "list-sessions": {
+          "description": "List sessions",
+          "type": "token",
+          "combinable": true
+        },
+        "--no-legend": {
+          "description": "Hide column headings",
+          "type": "token",
+          "combinable": true
+        }
+      },
+      "combinations": {
+        "allowed": true,
+        "examples": [
+          "loginctl list-sessions --no-legend"
+        ]
+      },
+      "output": {
+        "type": "sessions",
+        "important_fields": []
+      }
+    },
+    "flatpak": {
+      "description": "List installed Flatpak apps and runtimes",
+      "category": "applications",
+      "use_when": [
+        "Flatpak application problems"
+      ],
+      "risk": "safe",
+      "read_only": true,
+      "requires_sudo": false,
+      "requires_confirmation": true,
+      "options": {
+        "list": {
+          "description": "List installed apps",
+          "type": "token",
+          "combinable": true
+        }
+      },
+      "combinations": {
+        "allowed": true,
+        "examples": [
+          "flatpak list"
+        ]
+      },
+      "output": {
+        "type": "flatpak_inventory",
+        "important_fields": []
+      }
+    },
+    "python3": {
+      "description": "Show Python version",
+      "category": "development",
+      "use_when": [
+        "Python environment problems"
+      ],
+      "risk": "safe",
+      "read_only": true,
+      "requires_sudo": false,
+      "requires_confirmation": true,
+      "options": {
+        "--version": {
+          "description": "Print version",
+          "type": "token",
+          "combinable": true
+        }
+      },
+      "combinations": {
+        "allowed": true,
+        "examples": [
+          "python3 --version"
+        ]
+      },
+      "output": {
+        "type": "version",
+        "important_fields": []
+      }
+    },
+    "node": {
+      "description": "Show Node.js version",
+      "category": "development",
+      "use_when": [
+        "Node.js environment problems"
+      ],
+      "risk": "safe",
+      "read_only": true,
+      "requires_sudo": false,
+      "requires_confirmation": true,
+      "options": {
+        "--version": {
+          "description": "Print version",
+          "type": "token",
+          "combinable": true
+        }
+      },
+      "combinations": {
+        "allowed": true,
+        "examples": [
+          "node --version"
+        ]
+      },
+      "output": {
+        "type": "version",
+        "important_fields": []
+      }
+    },
+    "npm": {
+      "description": "Show npm version",
+      "category": "development",
+      "use_when": [
+        "npm environment problems"
+      ],
+      "risk": "safe",
+      "read_only": true,
+      "requires_sudo": false,
+      "requires_confirmation": true,
+      "options": {
+        "--version": {
+          "description": "Print version",
+          "type": "token",
+          "combinable": true
+        }
+      },
+      "combinations": {
+        "allowed": true,
+        "examples": [
+          "npm --version"
+        ]
+      },
+      "output": {
+        "type": "version",
+        "important_fields": []
+      }
+    },
+    "git": {
+      "description": "Show Git version",
+      "category": "development",
+      "use_when": [
+        "Git installation problems"
+      ],
+      "risk": "safe",
+      "read_only": true,
+      "requires_sudo": false,
+      "requires_confirmation": true,
+      "options": {
+        "--version": {
+          "description": "Print version",
+          "type": "token",
+          "combinable": true
+        }
+      },
+      "combinations": {
+        "allowed": true,
+        "examples": [
+          "git --version"
+        ]
+      },
+      "output": {
+        "type": "version",
+        "important_fields": []
+      }
+    },
+    "gcc": {
+      "description": "Show GCC compiler version",
+      "category": "development",
+      "use_when": [
+        "C compiler problems"
+      ],
+      "risk": "safe",
+      "read_only": true,
+      "requires_sudo": false,
+      "requires_confirmation": true,
+      "options": {
+        "--version": {
+          "description": "Print version",
+          "type": "token",
+          "combinable": true
+        }
+      },
+      "combinations": {
+        "allowed": true,
+        "examples": [
+          "gcc --version"
+        ]
+      },
+      "output": {
+        "type": "version",
+        "important_fields": []
+      }
+    },
+    "lspci": {
+      "description": "List PCI hardware when pciutils is installed",
+      "category": "hardware",
+      "use_when": [
+        "hardware or adapter not detected"
+      ],
+      "risk": "safe",
+      "read_only": true,
+      "requires_sudo": false,
+      "requires_confirmation": true,
+      "options": {},
+      "combinations": {
+        "allowed": false,
+        "examples": [
+          "lspci"
+        ]
+      },
+      "output": {
+        "type": "pci_devices",
+        "important_fields": []
+      }
+    },
+    "lsusb": {
+      "description": "List USB hardware when usbutils is installed",
+      "category": "hardware",
+      "use_when": [
+        "USB device problems"
+      ],
+      "risk": "safe",
+      "read_only": true,
+      "requires_sudo": false,
+      "requires_confirmation": true,
+      "options": {},
+      "combinations": {
+        "allowed": false,
+        "examples": [
+          "lsusb"
+        ]
+      },
+      "output": {
+        "type": "usb_devices",
+        "important_fields": []
+      }
+    },
+    "sensors": {
+      "description": "Inspect hardware temperature sensors, voltages, and fan speeds",
+      "category": "hardware",
+      "use_when": [
+        "overheating",
+        "fan noise",
+        "temperature monitoring",
+        "thermal throttling"
+      ],
+      "risk": "safe",
+      "read_only": true,
+      "requires_sudo": false,
+      "requires_confirmation": true,
+      "options": {},
+      "combinations": {
+        "allowed": true,
+        "examples": [
+          "sensors"
+        ]
+      },
+      "output": {
+        "type": "text",
+        "important_fields": []
+      }
+    },
+    "acpi": {
+      "description": "Show battery, thermal, and AC adapter status",
+      "category": "hardware",
+      "use_when": [
+        "battery drain",
+        "laptop power issues",
+        "thermal zones",
+        "AC adapter check"
+      ],
+      "risk": "safe",
+      "read_only": true,
+      "requires_sudo": false,
+      "requires_confirmation": true,
+      "options": {
+        "-b": {
+          "description": "Show battery information",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
+        },
+        "-t": {
+          "description": "Show thermal information",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
+        },
+        "-V": {
+          "description": "Show all available ACPI device information",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
+        }
+      },
+      "combinations": {
+        "allowed": true,
+        "examples": [
+          "acpi -b",
+          "acpi -t",
+          "acpi -V"
+        ]
+      },
+      "output": {
+        "type": "text",
+        "important_fields": []
+      }
+    },
+    "vmstat": {
+      "description": "Display virtual memory, swap activity, I/O, and CPU statistics",
+      "category": "system",
+      "use_when": [
+        "system slow",
+        "memory paging",
+        "swap thrashing",
+        "CPU wait"
+      ],
+      "risk": "safe",
+      "read_only": true,
+      "requires_sudo": false,
+      "requires_confirmation": true,
+      "options": {
+        "1": {
+          "description": "1 second sampling interval",
+          "type": "token",
+          "combinable": true,
+          "requires": [
+            "2"
+          ]
+        },
+        "2": {
+          "description": "2 samples total count",
+          "type": "token",
+          "combinable": true,
+          "requires": [
+            "1"
+          ]
+        },
+        "-s": {
+          "description": "Display memory event counters table",
+          "type": "flag",
+          "combinable": false,
+          "requires": []
+        }
+      },
+      "combinations": {
+        "allowed": true,
+        "examples": [
+          "vmstat",
+          "vmstat 1 2",
+          "vmstat -s"
+        ]
+      },
+      "output": {
+        "type": "table",
+        "important_fields": [
+          "si",
+          "so",
+          "bi",
+          "bo",
+          "wa"
+        ]
+      }
+    },
+    "iostat": {
+      "description": "Display CPU and storage device I/O statistics",
+      "category": "disk",
+      "use_when": [
+        "disk performance issues",
+        "high IO wait",
+        "storage bottleneck"
+      ],
+      "risk": "safe",
+      "read_only": true,
+      "requires_sudo": false,
+      "requires_confirmation": true,
+      "options": {
+        "-x": {
+          "description": "Display extended statistics",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
+        },
+        "-h": {
+          "description": "Display sizes in human-readable units",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
+        }
+      },
+      "combinations": {
+        "allowed": true,
+        "examples": [
+          "iostat",
+          "iostat -x",
+          "iostat -h"
+        ]
+      },
+      "output": {
+        "type": "table",
+        "important_fields": [
+          "tps",
+          "kB_read/s",
+          "kB_wrtn/s"
+        ]
+      }
+    },
+    "ss": {
+      "description": "Inspect network sockets, connections, and listening ports",
+      "category": "network",
+      "use_when": [
+        "open ports",
+        "listening services",
+        "network connections",
+        "port conflict"
+      ],
+      "risk": "safe",
+      "read_only": true,
+      "requires_sudo": false,
+      "requires_confirmation": true,
+      "options": {
+        "-s": {
+          "description": "Display summary statistics for sockets",
+          "type": "flag",
+          "combinable": false,
+          "requires": []
+        },
+        "-tuln": {
+          "description": "Display listening TCP and UDP sockets without name resolution",
+          "type": "flag",
+          "combinable": false,
+          "requires": []
+        }
+      },
+      "combinations": {
+        "allowed": true,
+        "examples": [
+          "ss -s",
+          "ss -tuln"
+        ]
+      },
+      "output": {
+        "type": "network",
+        "important_fields": []
+      }
+    },
+    "lscpu": {
+      "description": "Display CPU architecture, cores, sockets, frequency, and cache information",
+      "category": "system",
+      "use_when": [
+        "hardware inventory",
+        "CPU specifications",
+        "core count",
+        "CPU topology"
+      ],
+      "risk": "safe",
+      "read_only": true,
+      "requires_sudo": false,
+      "requires_confirmation": true,
+      "options": {},
+      "combinations": {
+        "allowed": true,
+        "examples": [
+          "lscpu"
+        ]
+      },
+      "output": {
+        "type": "table",
+        "important_fields": [
+          "CPU(s)",
+          "Model name",
+          "Thread(s) per core"
+        ]
+      }
+    },
+    "mpstat": {
+      "description": "Display per-processor and multi-CPU core utilization",
+      "category": "system",
+      "use_when": [
+        "per-core CPU usage",
+        "multithreading bottleneck",
+        "single-core saturation"
+      ],
+      "risk": "safe",
+      "read_only": true,
+      "requires_sudo": false,
+      "requires_confirmation": true,
+      "options": {
+        "-P": {
+          "description": "Specify processors to monitor",
+          "type": "token",
+          "combinable": true,
+          "requires": [
+            "ALL"
+          ]
+        },
+        "ALL": {
+          "description": "All individual CPU cores",
+          "type": "token",
+          "combinable": true,
+          "requires": [
+            "-P"
+          ]
+        }
+      },
+      "combinations": {
+        "allowed": true,
+        "examples": [
+          "mpstat",
+          "mpstat -P ALL"
+        ]
+      },
+      "output": {
+        "type": "table",
+        "important_fields": [
+          "CPU",
+          "%usr",
+          "%sys",
+          "%idle"
+        ]
+      }
+    },
+    "lsmod": {
+      "description": "Show the status of modules in the Linux kernel",
+      "category": "system",
+      "use_when": [
+        "kernel driver issues",
+        "missing device modules",
+        "driver troubleshooting"
+      ],
+      "risk": "safe",
+      "read_only": true,
+      "requires_sudo": false,
+      "requires_confirmation": true,
+      "options": {},
+      "combinations": {
+        "allowed": true,
+        "examples": [
+          "lsmod"
+        ]
+      },
+      "output": {
+        "type": "table",
+        "important_fields": [
+          "Module",
+          "Size",
+          "Used by"
+        ]
+      }
     }
   },
-
   "workflows": {
     "system_slow": {
       "description": "Investigate a generally slow Linux system",
-
       "triggers": [
         "system is slow",
         "laptop is slow",
         "computer is slow",
         "Ubuntu is slow",
         "system is lagging",
-        "everything is slow"
+        "everything is slow",
+        "why is my system slow",
+        "why is my laptop slow",
+        "my system is slow",
+        "my laptop is slow",
+        "system running slowly",
+        "computer running slowly",
+        "computer is lagging",
+        "Ubuntu is running slowly",
+        "system performance problem",
+        "laptop performance is poor",
+        "computer is very slow"
       ],
-
-      "candidate_commands": ["uptime", "free", "df", "ps"],
-
+      "candidate_commands": [
+        {
+          "command_id": "uptime",
+          "options": []
+        },
+        {
+          "command_id": "free",
+          "options": [
+            "-h"
+          ]
+        },
+        {
+          "command_id": "df",
+          "options": [
+            "-h"
+          ]
+        },
+        {
+          "command_id": "ps",
+          "options": [
+            "aux"
+          ]
+        }
+      ],
       "decision_rules": [
         {
           "condition": "load average is high",
@@ -246,47 +1437,1104 @@
         {
           "condition": "a process has unusually high memory usage",
           "possible_problem": "Memory-heavy process"
+        },
+        {
+          "condition": "a diagnostic command is unavailable or exits unsuccessfully",
+          "possible_problem": "The result is incomplete; inspect the error and do not infer a root cause from missing evidence"
         }
       ]
     },
-
     "disk_space": {
-      "description": "Investigate low disk space",
-
+      "description": "Investigate disk capacity and mount points",
       "triggers": [
         "disk is full",
         "storage is low",
         "not enough space",
-        "root partition is full"
+        "root partition is full",
+        "no space left on device",
+        "disk space problem"
       ],
-
-      "candidate_commands": ["df"]
+      "candidate_commands": [
+        {
+          "command_id": "df",
+          "options": [
+            "-h"
+          ]
+        },
+        {
+          "command_id": "lsblk",
+          "options": [
+            "-f"
+          ]
+        },
+        {
+          "command_id": "findmnt",
+          "options": []
+        }
+      ],
+      "decision_rules": [
+        {
+          "condition": "a filesystem is nearly full",
+          "possible_problem": "Filesystem has little free space"
+        },
+        {
+          "condition": "expected device or mount is missing",
+          "possible_problem": "Storage may not be mounted"
+        },
+        {
+          "condition": "a diagnostic command is unavailable or exits unsuccessfully",
+          "possible_problem": "The result is incomplete; inspect the error and do not infer a root cause from missing evidence"
+        }
+      ]
     },
-
     "memory_problem": {
-      "description": "Investigate memory-related problems",
-
+      "description": "Investigate RAM, swap and resource-heavy processes",
       "triggers": [
         "RAM is full",
         "system freezes",
         "applications freeze",
-        "too much memory usage"
+        "too much memory usage",
+        "high memory usage",
+        "out of memory",
+        "swap is full"
       ],
-
-      "candidate_commands": ["free", "ps"]
+      "candidate_commands": [
+        {
+          "command_id": "free",
+          "options": [
+            "-h"
+          ]
+        },
+        {
+          "command_id": "ps",
+          "options": [
+            "aux"
+          ]
+        },
+        {
+          "command_id": "uptime",
+          "options": []
+        }
+      ],
+      "decision_rules": [
+        {
+          "condition": "available memory is low and swap usage high",
+          "possible_problem": "Memory pressure"
+        },
+        {
+          "condition": "a process uses unusually high memory",
+          "possible_problem": "A memory-heavy process may contribute"
+        },
+        {
+          "condition": "a diagnostic command is unavailable or exits unsuccessfully",
+          "possible_problem": "The result is incomplete; inspect the error and do not infer a root cause from missing evidence"
+        }
+      ]
     },
-
     "process_problem": {
-      "description": "Investigate resource-heavy processes",
-
+      "description": "Investigate CPU load and running processes",
       "triggers": [
         "CPU is high",
         "one application is using too much CPU",
         "one application is using too much RAM",
-        "which process is causing the problem"
+        "which process is causing the problem",
+        "high CPU usage",
+        "application uses too much CPU",
+        "process is stuck"
       ],
-
-      "candidate_commands": ["ps", "uptime"]
+      "candidate_commands": [
+        {
+          "command_id": "ps",
+          "options": [
+            "aux"
+          ]
+        },
+        {
+          "command_id": "uptime",
+          "options": []
+        }
+      ],
+      "decision_rules": [
+        {
+          "condition": "a process has unusually high CPU usage",
+          "possible_problem": "CPU-heavy process"
+        },
+        {
+          "condition": "load is persistently high",
+          "possible_problem": "Sustained system load"
+        },
+        {
+          "condition": "a diagnostic command is unavailable or exits unsuccessfully",
+          "possible_problem": "The result is incomplete; inspect the error and do not infer a root cause from missing evidence"
+        }
+      ]
+    },
+    "service_problem": {
+      "description": "Inspect failed system and user services",
+      "triggers": [
+        "service failed",
+        "service will not start",
+        "failed services",
+        "systemd service failed",
+        "daemon is not running"
+      ],
+      "candidate_commands": [
+        {
+          "command_id": "systemctl",
+          "options": [
+            "--failed",
+            "--no-pager"
+          ]
+        },
+        {
+          "command_id": "systemctl",
+          "options": [
+            "--user",
+            "--failed",
+            "--no-pager"
+          ]
+        },
+        {
+          "command_id": "journalctl",
+          "options": [
+            "-p",
+            "err",
+            "-b",
+            "-n",
+            "50",
+            "--no-pager"
+          ]
+        }
+      ],
+      "decision_rules": [
+        {
+          "condition": "systemctl lists a failed unit",
+          "possible_problem": "A service has failed"
+        },
+        {
+          "condition": "journal shows dependency or configuration errors",
+          "possible_problem": "Service logs may explain startup failure"
+        },
+        {
+          "condition": "a diagnostic command is unavailable or exits unsuccessfully",
+          "possible_problem": "The result is incomplete; inspect the error and do not infer a root cause from missing evidence"
+        }
+      ]
+    },
+    "network_problem": {
+      "description": "Inspect interfaces, routes, NetworkManager and DNS",
+      "triggers": [
+        "no internet",
+        "internet is not working",
+        "network is down",
+        "cannot connect to internet",
+        "DNS is not working",
+        "websites are not loading"
+      ],
+      "candidate_commands": [
+        {
+          "command_id": "ip",
+          "options": [
+            "-brief",
+            "address"
+          ]
+        },
+        {
+          "command_id": "ip",
+          "options": [
+            "route"
+          ]
+        },
+        {
+          "command_id": "nmcli",
+          "options": [
+            "device",
+            "status"
+          ]
+        },
+        {
+          "command_id": "resolvectl",
+          "options": [
+            "status"
+          ]
+        }
+      ],
+      "decision_rules": [
+        {
+          "condition": "no interface has an expected address",
+          "possible_problem": "Interface may be disconnected or unconfigured"
+        },
+        {
+          "condition": "no default route exists",
+          "possible_problem": "Default route may be missing"
+        },
+        {
+          "condition": "DNS settings look incorrect",
+          "possible_problem": "DNS configuration may be involved"
+        },
+        {
+          "condition": "a diagnostic command is unavailable or exits unsuccessfully",
+          "possible_problem": "The result is incomplete; inspect the error and do not infer a root cause from missing evidence"
+        }
+      ]
+    },
+    "wifi_problem": {
+      "description": "Inspect Wi-Fi device and radio state",
+      "triggers": [
+        "Wi-Fi is not working",
+        "wifi keeps disconnecting",
+        "cannot connect to Wi-Fi",
+        "wireless network missing",
+        "Wi-Fi adapter not found"
+      ],
+      "candidate_commands": [
+        {
+          "command_id": "nmcli",
+          "options": [
+            "device",
+            "status"
+          ]
+        },
+        {
+          "command_id": "rfkill",
+          "options": [
+            "list"
+          ]
+        },
+        {
+          "command_id": "ip",
+          "options": [
+            "link"
+          ]
+        }
+      ],
+      "decision_rules": [
+        {
+          "condition": "wireless device is disconnected or unavailable",
+          "possible_problem": "Wi-Fi adapter or connection state needs investigation"
+        },
+        {
+          "condition": "wireless radio is blocked",
+          "possible_problem": "Radio is blocked"
+        },
+        {
+          "condition": "a diagnostic command is unavailable or exits unsuccessfully",
+          "possible_problem": "The result is incomplete; inspect the error and do not infer a root cause from missing evidence"
+        }
+      ]
+    },
+    "bluetooth_problem": {
+      "description": "Inspect Bluetooth controller, devices and radio state",
+      "triggers": [
+        "Bluetooth is not working",
+        "bluetooth keeps disconnecting",
+        "cannot pair Bluetooth",
+        "Bluetooth device not found"
+      ],
+      "candidate_commands": [
+        {
+          "command_id": "bluetoothctl",
+          "options": [
+            "show"
+          ]
+        },
+        {
+          "command_id": "bluetoothctl",
+          "options": [
+            "devices"
+          ]
+        },
+        {
+          "command_id": "rfkill",
+          "options": [
+            "list"
+          ]
+        }
+      ],
+      "decision_rules": [
+        {
+          "condition": "no Bluetooth controller is reported",
+          "possible_problem": "Controller, driver, service or hardware needs investigation"
+        },
+        {
+          "condition": "Bluetooth radio is blocked",
+          "possible_problem": "Bluetooth radio is blocked"
+        },
+        {
+          "condition": "a diagnostic command is unavailable or exits unsuccessfully",
+          "possible_problem": "The result is incomplete; inspect the error and do not infer a root cause from missing evidence"
+        }
+      ]
+    },
+    "audio_problem": {
+      "description": "Inspect audio server and input/output devices",
+      "triggers": [
+        "no sound",
+        "audio is not working",
+        "speakers are not working",
+        "microphone is not working",
+        "no audio output"
+      ],
+      "candidate_commands": [
+        {
+          "command_id": "pactl",
+          "options": [
+            "info"
+          ]
+        },
+        {
+          "command_id": "pactl",
+          "options": [
+            "list",
+            "short",
+            "sinks"
+          ]
+        },
+        {
+          "command_id": "pactl",
+          "options": [
+            "list",
+            "short",
+            "sources"
+          ]
+        }
+      ],
+      "decision_rules": [
+        {
+          "condition": "audio server cannot be contacted",
+          "possible_problem": "Audio server may be unavailable"
+        },
+        {
+          "condition": "no output sink is listed",
+          "possible_problem": "No output device is exposed to the audio server"
+        },
+        {
+          "condition": "a diagnostic command is unavailable or exits unsuccessfully",
+          "possible_problem": "The result is incomplete; inspect the error and do not infer a root cause from missing evidence"
+        }
+      ]
+    },
+    "package_problem": {
+      "description": "Inspect package database and dependency consistency",
+      "triggers": [
+        "apt is broken",
+        "apt error",
+        "dpkg error",
+        "broken packages",
+        "dependency problems",
+        "package installation failed",
+        "cannot install package"
+      ],
+      "candidate_commands": [
+        {
+          "command_id": "dpkg",
+          "options": [
+            "--audit"
+          ]
+        },
+        {
+          "command_id": "apt-get",
+          "options": [
+            "check"
+          ]
+        },
+        {
+          "command_id": "apt",
+          "options": [
+            "list",
+            "--upgradable"
+          ]
+        }
+      ],
+      "decision_rules": [
+        {
+          "condition": "dpkg audit reports partially installed packages",
+          "possible_problem": "Package configuration may be incomplete"
+        },
+        {
+          "condition": "dependency check reports errors",
+          "possible_problem": "Package dependencies may be inconsistent"
+        },
+        {
+          "condition": "a diagnostic command is unavailable or exits unsuccessfully",
+          "possible_problem": "The result is incomplete; inspect the error and do not infer a root cause from missing evidence"
+        }
+      ]
+    },
+    "application_crash": {
+      "description": "Inspect current-boot error logs and running processes",
+      "triggers": [
+        "application crashes",
+        "app keeps crashing",
+        "program crashes",
+        "application will not open",
+        "app won't start",
+        "application closes by itself"
+      ],
+      "candidate_commands": [
+        {
+          "command_id": "journalctl",
+          "options": [
+            "-p",
+            "err",
+            "-b",
+            "-n",
+            "50",
+            "--no-pager"
+          ]
+        },
+        {
+          "command_id": "ps",
+          "options": [
+            "aux"
+          ]
+        }
+      ],
+      "decision_rules": [
+        {
+          "condition": "recent journal errors align with the reported failure",
+          "possible_problem": "System logs may contain relevant evidence"
+        },
+        {
+          "condition": "application is absent from process list",
+          "possible_problem": "Application may have exited; app-specific logs may be needed"
+        },
+        {
+          "condition": "a diagnostic command is unavailable or exits unsuccessfully",
+          "possible_problem": "The result is incomplete; inspect the error and do not infer a root cause from missing evidence"
+        }
+      ]
+    },
+    "boot_login_problem": {
+      "description": "Inspect failed services, current-boot errors and login sessions",
+      "triggers": [
+        "boot is slow",
+        "slow boot",
+        "login problem",
+        "cannot log in",
+        "system startup problem",
+        "Ubuntu takes too long to start"
+      ],
+      "candidate_commands": [
+        {
+          "command_id": "systemctl",
+          "options": [
+            "--failed",
+            "--no-pager"
+          ]
+        },
+        {
+          "command_id": "journalctl",
+          "options": [
+            "-p",
+            "err",
+            "-b",
+            "-n",
+            "50",
+            "--no-pager"
+          ]
+        },
+        {
+          "command_id": "loginctl",
+          "options": [
+            "list-sessions",
+            "--no-legend"
+          ]
+        }
+      ],
+      "decision_rules": [
+        {
+          "condition": "failed units are present",
+          "possible_problem": "A failed service may affect startup"
+        },
+        {
+          "condition": "journal contains repeated current-boot errors",
+          "possible_problem": "Boot/session logs need closer inspection"
+        },
+        {
+          "condition": "a diagnostic command is unavailable or exits unsuccessfully",
+          "possible_problem": "The result is incomplete; inspect the error and do not infer a root cause from missing evidence"
+        }
+      ]
+    },
+    "time_problem": {
+      "description": "Inspect time zone and clock synchronization",
+      "triggers": [
+        "system time is wrong",
+        "clock is wrong",
+        "wrong time zone",
+        "time synchronization problem",
+        "date and time are incorrect"
+      ],
+      "candidate_commands": [
+        {
+          "command_id": "timedatectl",
+          "options": [
+            "status"
+          ]
+        }
+      ],
+      "decision_rules": [
+        {
+          "condition": "time zone is unexpected",
+          "possible_problem": "System time zone may be misconfigured"
+        },
+        {
+          "condition": "clock synchronization is inactive",
+          "possible_problem": "Time synchronization needs investigation"
+        },
+        {
+          "condition": "a diagnostic command is unavailable or exits unsuccessfully",
+          "possible_problem": "The result is incomplete; inspect the error and do not infer a root cause from missing evidence"
+        }
+      ]
+    },
+    "development_environment": {
+      "description": "Check common development tool availability and versions",
+      "triggers": [
+        "Python is not working",
+        "python version",
+        "Node.js is not working",
+        "npm is not working",
+        "Git is not working",
+        "gcc is not working",
+        "compiler is missing"
+      ],
+      "candidate_commands": [
+        {
+          "command_id": "python3",
+          "options": [
+            "--version"
+          ]
+        },
+        {
+          "command_id": "node",
+          "options": [
+            "--version"
+          ]
+        },
+        {
+          "command_id": "npm",
+          "options": [
+            "--version"
+          ]
+        },
+        {
+          "command_id": "git",
+          "options": [
+            "--version"
+          ]
+        },
+        {
+          "command_id": "gcc",
+          "options": [
+            "--version"
+          ]
+        }
+      ],
+      "decision_rules": [
+        {
+          "condition": "a required command is unavailable",
+          "possible_problem": "Tool may not be installed or on PATH"
+        },
+        {
+          "condition": "installed version conflicts with project requirements",
+          "possible_problem": "Project may require a different version"
+        },
+        {
+          "condition": "a diagnostic command is unavailable or exits unsuccessfully",
+          "possible_problem": "The result is incomplete; inspect the error and do not infer a root cause from missing evidence"
+        }
+      ]
+    },
+    "hardware_problem": {
+      "description": "Collect a basic PCI/USB hardware inventory",
+      "triggers": [
+        "hardware is not detected",
+        "USB device not detected",
+        "network adapter not detected",
+        "identify hardware",
+        "device is missing"
+      ],
+      "candidate_commands": [
+        {
+          "command_id": "lspci",
+          "options": []
+        },
+        {
+          "command_id": "lsusb",
+          "options": []
+        },
+        {
+          "command_id": "uname",
+          "options": [
+            "-a"
+          ]
+        }
+      ],
+      "decision_rules": [
+        {
+          "condition": "expected hardware is absent from inventory",
+          "possible_problem": "Device, driver, firmware or connection needs investigation"
+        },
+        {
+          "condition": "a diagnostic command is unavailable or exits unsuccessfully",
+          "possible_problem": "The result is incomplete; inspect the error and do not infer a root cause from missing evidence"
+        }
+      ]
+    },
+    "flatpak_problem": {
+      "description": "Inventory installed Flatpak apps and runtimes",
+      "triggers": [
+        "Flatpak app problem",
+        "flatpak application not opening",
+        "which Flatpak apps are installed",
+        "Flatpak runtime problem"
+      ],
+      "candidate_commands": [
+        {
+          "command_id": "flatpak",
+          "options": [
+            "list"
+          ]
+        }
+      ],
+      "decision_rules": [
+        {
+          "condition": "Flatpak command is unavailable",
+          "possible_problem": "Flatpak may not be installed"
+        },
+        {
+          "condition": "application is listed but fails to launch",
+          "possible_problem": "Further app-specific logs are required"
+        },
+        {
+          "condition": "a diagnostic command is unavailable or exits unsuccessfully",
+          "possible_problem": "The result is incomplete; inspect the error and do not infer a root cause from missing evidence"
+        }
+      ]
+    },
+    "overheating_thermal": {
+      "description": "Inspect hardware temperature sensors, fan speeds, and thermal throttling",
+      "triggers": [
+        "laptop is overheating",
+        "CPU temperature is high",
+        "laptop is hot",
+        "computer running hot",
+        "fan is spinning fast",
+        "fan noise is loud",
+        "temperature is too high",
+        "thermal throttling",
+        "system overheating",
+        "why is my laptop overheating",
+        "why is my computer overheating",
+        "laptop getting very hot",
+        "overheating problem",
+        "overheating",
+        "computer is overheating",
+        "laptop overheated"
+      ],
+      "candidate_commands": [
+        {
+          "command_id": "sensors",
+          "options": []
+        },
+        {
+          "command_id": "acpi",
+          "options": [
+            "-t"
+          ]
+        },
+        {
+          "command_id": "uptime",
+          "options": []
+        },
+        {
+          "command_id": "ps",
+          "options": [
+            "aux"
+          ]
+        }
+      ],
+      "decision_rules": [
+        {
+          "condition": "sensor temperature exceeds 85\u00b0C",
+          "possible_problem": "High thermal pressure / possible thermal throttling"
+        },
+        {
+          "condition": "fan speeds are zero or abnormally low during high load",
+          "possible_problem": "Potential fan or cooling system failure"
+        },
+        {
+          "condition": "a process has runaway CPU usage",
+          "possible_problem": "High processor load generating excessive heat"
+        },
+        {
+          "condition": "a diagnostic command is unavailable or exits unsuccessfully",
+          "possible_problem": "The result is incomplete; inspect the error and do not infer a root cause from missing evidence"
+        }
+      ]
+    },
+    "battery_power": {
+      "description": "Inspect battery health, charge state, and power consumption",
+      "triggers": [
+        "battery is draining fast",
+        "battery problem",
+        "battery health",
+        "laptop battery dying",
+        "power consumption high",
+        "battery percentage dropping quickly",
+        "laptop battery not holding charge",
+        "battery discharge rate high",
+        "battery dying fast",
+        "check battery status"
+      ],
+      "candidate_commands": [
+        {
+          "command_id": "acpi",
+          "options": [
+            "-V"
+          ]
+        },
+        {
+          "command_id": "acpi",
+          "options": [
+            "-b"
+          ]
+        },
+        {
+          "command_id": "uptime",
+          "options": []
+        },
+        {
+          "command_id": "ps",
+          "options": [
+            "aux"
+          ]
+        }
+      ],
+      "decision_rules": [
+        {
+          "condition": "last full capacity is significantly below design capacity",
+          "possible_problem": "Degraded physical battery health"
+        },
+        {
+          "condition": "high discharge rate without AC power",
+          "possible_problem": "Resource-intensive background processes draining battery"
+        },
+        {
+          "condition": "a diagnostic command is unavailable or exits unsuccessfully",
+          "possible_problem": "The result is incomplete; inspect the error and do not infer a root cause from missing evidence"
+        }
+      ]
+    },
+    "cpu_bottleneck": {
+      "description": "Analyze CPU utilization, multi-core distribution, and processor bottlenecks",
+      "triggers": [
+        "CPU usage is 100%",
+        "high CPU load",
+        "CPU bottleneck",
+        "CPU is pegged",
+        "all CPU cores maxed out",
+        "why is CPU usage high",
+        "processor bottleneck",
+        "CPU running at maximum",
+        "CPU core pegged at 100%",
+        "CPU usage is high",
+        "why is my cpu 100"
+      ],
+      "candidate_commands": [
+        {
+          "command_id": "mpstat",
+          "options": [
+            "-P",
+            "ALL"
+          ]
+        },
+        {
+          "command_id": "lscpu",
+          "options": []
+        },
+        {
+          "command_id": "uptime",
+          "options": []
+        },
+        {
+          "command_id": "ps",
+          "options": [
+            "aux"
+          ]
+        }
+      ],
+      "decision_rules": [
+        {
+          "condition": "single CPU core is at 100% while others are idle",
+          "possible_problem": "Single-threaded process bottleneck"
+        },
+        {
+          "condition": "all CPU cores have near-zero idle time",
+          "possible_problem": "System-wide CPU resource exhaustion"
+        },
+        {
+          "condition": "high iowait percentage across cores",
+          "possible_problem": "CPU is stalled waiting on storage I/O"
+        },
+        {
+          "condition": "a diagnostic command is unavailable or exits unsuccessfully",
+          "possible_problem": "The result is incomplete; inspect the error and do not infer a root cause from missing evidence"
+        }
+      ]
+    },
+    "io_disk_bottleneck": {
+      "description": "Diagnose storage I/O wait, disk write latency, and transfer bottlenecks",
+      "triggers": [
+        "disk is slow",
+        "disk I/O bottleneck",
+        "high I/O wait",
+        "disk write speed slow",
+        "hard drive is grinding",
+        "SSD performance poor",
+        "system unresponsive during disk writes",
+        "high iowait",
+        "storage is slow",
+        "why is disk so slow"
+      ],
+      "candidate_commands": [
+        {
+          "command_id": "iostat",
+          "options": []
+        },
+        {
+          "command_id": "iostat",
+          "options": [
+            "-x"
+          ]
+        },
+        {
+          "command_id": "vmstat",
+          "options": [
+            "1",
+            "2"
+          ]
+        },
+        {
+          "command_id": "df",
+          "options": [
+            "-h"
+          ]
+        }
+      ],
+      "decision_rules": [
+        {
+          "condition": "high %iowait in CPU statistics",
+          "possible_problem": "Disk subsystem is the primary system bottleneck"
+        },
+        {
+          "condition": "device tps and write volume continuously saturated",
+          "possible_problem": "Heavy continuous background disk write activity"
+        },
+        {
+          "condition": "a diagnostic command is unavailable or exits unsuccessfully",
+          "possible_problem": "The result is incomplete; inspect the error and do not infer a root cause from missing evidence"
+        }
+      ]
+    },
+    "ports_listening_services": {
+      "description": "Inspect open network ports, active listening sockets, and port conflicts",
+      "triggers": [
+        "what ports are open",
+        "which services are listening",
+        "port conflict",
+        "check open ports",
+        "inspect listening sockets",
+        "port in use",
+        "which port is being used",
+        "see listening ports",
+        "is port open",
+        "check listening ports",
+        "what is listening on my system"
+      ],
+      "candidate_commands": [
+        {
+          "command_id": "ss",
+          "options": [
+            "-tuln"
+          ]
+        },
+        {
+          "command_id": "ss",
+          "options": [
+            "-s"
+          ]
+        },
+        {
+          "command_id": "systemctl",
+          "options": [
+            "--failed",
+            "--no-pager"
+          ]
+        }
+      ],
+      "decision_rules": [
+        {
+          "condition": "expected service port is absent from listening list",
+          "possible_problem": "Service is not running or failed to bind port"
+        },
+        {
+          "condition": "port is bound to 127.0.0.1 instead of 0.0.0.0",
+          "possible_problem": "Service is listening only on local loopback"
+        },
+        {
+          "condition": "a diagnostic command is unavailable or exits unsuccessfully",
+          "possible_problem": "The result is incomplete; inspect the error and do not infer a root cause from missing evidence"
+        }
+      ]
+    },
+    "kernel_module_driver": {
+      "description": "Inspect loaded kernel modules, hardware controllers, and driver bindings",
+      "triggers": [
+        "driver problem",
+        "kernel module failed",
+        "module not loaded",
+        "hardware driver missing",
+        "check loaded drivers",
+        "kernel module error",
+        "device driver issue",
+        "missing kernel driver",
+        "PCI driver missing",
+        "driver not working"
+      ],
+      "candidate_commands": [
+        {
+          "command_id": "lsmod",
+          "options": []
+        },
+        {
+          "command_id": "lspci",
+          "options": []
+        },
+        {
+          "command_id": "lsusb",
+          "options": []
+        },
+        {
+          "command_id": "uname",
+          "options": [
+            "-a"
+          ]
+        }
+      ],
+      "decision_rules": [
+        {
+          "condition": "hardware detected in lspci/lsusb but missing corresponding kernel module",
+          "possible_problem": "Missing or uncompiled kernel module / driver"
+        },
+        {
+          "condition": "kernel module not in lsmod list",
+          "possible_problem": "Driver module not automatically loaded"
+        },
+        {
+          "condition": "a diagnostic command is unavailable or exits unsuccessfully",
+          "possible_problem": "The result is incomplete; inspect the error and do not infer a root cause from missing evidence"
+        }
+      ]
+    },
+    "system_specs_inventory": {
+      "description": "Collect a complete read-only inventory of system hardware, CPU, RAM, and OS",
+      "triggers": [
+        "system specifications",
+        "what are my specs",
+        "check hardware specs",
+        "computer hardware details",
+        "show CPU and RAM specs",
+        "system overview",
+        "system inventory",
+        "system summary",
+        "hardware summary",
+        "what hardware do I have",
+        "show my system specs"
+      ],
+      "candidate_commands": [
+        {
+          "command_id": "lscpu",
+          "options": []
+        },
+        {
+          "command_id": "free",
+          "options": [
+            "-h"
+          ]
+        },
+        {
+          "command_id": "df",
+          "options": [
+            "-h"
+          ]
+        },
+        {
+          "command_id": "uname",
+          "options": [
+            "-a"
+          ]
+        },
+        {
+          "command_id": "lsblk",
+          "options": [
+            "-f"
+          ]
+        }
+      ],
+      "decision_rules": [
+        {
+          "condition": "all system specification inventory checks succeed",
+          "possible_problem": "Baseline hardware overview compiled successfully"
+        },
+        {
+          "condition": "a diagnostic command is unavailable or exits unsuccessfully",
+          "possible_problem": "The result is incomplete; inspect the error and do not infer a root cause from missing evidence"
+        }
+      ]
+    },
+    "inode_exhaustion": {
+      "description": "Inspect filesystem inode utilization and exhausted inode tables",
+      "triggers": [
+        "no space left on device but disk not full",
+        "inode exhaustion",
+        "out of inodes",
+        "check inodes",
+        "inodes full",
+        "cannot create file no space",
+        "inode problem",
+        "inode usage is high"
+      ],
+      "candidate_commands": [
+        {
+          "command_id": "df",
+          "options": [
+            "-i"
+          ]
+        },
+        {
+          "command_id": "df",
+          "options": [
+            "-h"
+          ]
+        },
+        {
+          "command_id": "findmnt",
+          "options": []
+        }
+      ],
+      "decision_rules": [
+        {
+          "condition": "inode usage percentage is 100% on filesystem",
+          "possible_problem": "Inodes exhausted: millions of tiny files created without running out of disk blocks"
+        },
+        {
+          "condition": "a diagnostic command is unavailable or exits unsuccessfully",
+          "possible_problem": "The result is incomplete; inspect the error and do not infer a root cause from missing evidence"
+        }
+      ]
     }
   }
 }

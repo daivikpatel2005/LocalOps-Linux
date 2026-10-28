@@ -1,9 +1,17 @@
-from .knowledge import (
+from pathlib import Path
+import sys
+
+# Ensure repository root is on sys.path for direct execution
+BASE_DIR = Path(__file__).resolve().parent.parent
+if str(BASE_DIR) not in sys.path:
+    sys.path.insert(0, str(BASE_DIR))
+
+from app.knowledge import (
     load_knowledge,
     get_commands,
     get_workflows,
     get_command,
-    find_workflow
+    find_workflow,
 )
 
 
@@ -14,17 +22,17 @@ def main():
 
     print(
         "Schema:",
-        knowledge["schema_version"]
+        knowledge.get("schema_version", "1.0"),
     )
 
     print(
         "Total commands:",
-        len(commands)
+        len(commands),
     )
 
     print(
         "Total workflows:",
-        len(workflows)
+        len(workflows),
     )
 
     print(
@@ -39,8 +47,9 @@ def main():
         "\nDF description:"
     )
 
+    df_cmd = get_command("df")
     print(
-        get_command("df")["description"]
+        df_cmd.get("description", "") if df_cmd else "Command not found"
     )
 
     print(
@@ -48,7 +57,7 @@ def main():
     )
 
     print(
-        get_command("df")["options"]
+        df_cmd.get("options", {}) if df_cmd else {}
     )
 
     print(
@@ -61,12 +70,12 @@ def main():
 
     print(
         "Workflow ID:",
-        workflow_id
+        workflow_id,
     )
 
     print(
         "Workflow:",
-        workflow
+        workflow,
     )
 
 

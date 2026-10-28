@@ -1,10 +1,25 @@
-from .agent import run_agent
+from pathlib import Path
+import sys
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+if str(BASE_DIR) not in sys.path:
+    sys.path.insert(0, str(BASE_DIR))
+
+from app.agent import run_agent
 
 
 def main():
-    request = input(
-        "LocalOps> "
-    ).strip()
+    if len(sys.argv) > 1:
+        request = " ".join(sys.argv[1:]).strip()
+    elif not sys.stdin.isatty():
+        piped = sys.stdin.read().strip()
+        request = piped if piped else "Why is my RAM full?"
+    else:
+        try:
+            request = input("LocalOps> ").strip()
+        except (KeyboardInterrupt, EOFError):
+            print()
+            return
 
     if not request:
         print("No request provided.")
