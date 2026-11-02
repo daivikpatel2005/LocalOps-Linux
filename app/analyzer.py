@@ -747,6 +747,423 @@ def _analyze_load_domain(
     }
 
 
+def _analyze_boot_domain(
+    results: list[dict[str, Any]],
+) -> Optional[dict[str, Any]]:
+    """Inspect boot times, startup bottlenecks, and slowest systemd services."""
+    time_out = _get_combined_stdout("systemd-analyze", results)
+    blame_out = "\n".join(
+        (r.get("stdout") or "").strip()
+        for r in results
+        if r.get("command_id") == "systemd-analyze" and "blame" in (r.get("command") or "")
+    )
+    if not blame_out:
+        blame_out = time_out
+
+    # Parse total boot time
+    time_match = re.search(r"Startup finished in ([^\n]+)", time_out)
+    total_time_str = time_match.group(0) if time_match else "Boot time measurement collected"
+
+    # Parse slow units from blame
+    slow_units = []
+    for line in blame_out.splitlines():
+        trimmed = line.strip()
+        if trimmed and ("s " in trimmed or "ms " in trimmed) and ".service" in trimmed:
+            slow_units.append(trimmed)
+
+    diagnosis = []
+    top_culprits = slow_units[:3]
+    top_culprits_str = ", ".join(top_culprits) if top_culprits else "No specific slow service identified"
+
+    prob = f"Slow system boot / Startup service delay ({len(slow_units)} units measured)"
+    cause = (
+        f"Boot time was delayed during system startup. {total_time_str}. "
+        f"The slowest initializing system services during boot were: {top_culprits_str}."
+    )
+    evid = f"{total_time_str}\nSlowest units:\n" + "\n".join(top_culprits)
+    fixes = [
+        "Inspect the critical startup dependency chain: systemd-analyze critical-chain",
+        "If NetworkManager-wait-online is slowing boot, disable the wait blocker: sudo systemctl disable NetworkManager-wait-online.service",
+        "Disable unneeded startup daemons with: sudo systemctl disable <service-name>",
+        "Review journal logs for the slowest unit: journalctl -u <service-name> -b",
+    ]
+
+    diagnosis.append(
+        {
+            "problem": prob,
+            "severity": "medium",
+            "cause": cause,
+            "evidence": evid,
+            "confidence": "high",
+            "fix_recommendations": fixes,
+        }
+    )
+
+    return {
+        "diagnosis": diagnosis,
+        "summary": cause,
+        "cause": cause,
+        "fix_recommendations": fixes,
+        "next_actions": [
+            {"command_id": "systemd-analyze", "options": ["critical-chain"], "reason": "Inspect time-critical dependency chain"},
+            {"command_id": "systemctl", "options": ["--failed", "--no-pager"], "reason": "Check for failed boot units"},
+        ],
+        "enough_evidence": True,
+    }
+
+
+def _analyze_thermal_battery_domain(
+    results: list[dict[str, Any]],
+) -> Optional[dict[str, Any]]:
+    """Inspect CPU temperatures, thermal zones, and battery health."""
+    sensors_out = _get_combined_stdout("sensors", results)
+    acpi_out = _get_combined_stdout("acpi", results)
+
+    # Parse CPU temperatures
+    temps = [float(t) for t in re.findall(r":\s*\+?(\d+(?:\.\d+)?)°C", sensors_out)]
+    if not temps:
+        temps = [float(t) for t in re.findall(r"(\d+(?:\.\d+)?) degrees C", acpi_out)]
+
+    max_temp = max(temps) if temps else None
+
+    # Parse battery status
+    batt_match = re.search(r"Battery \d+:\s*([^,]+),\s*(\d+)%", acpi_out)
+    batt_state = batt_match.group(1).strip() if batt_match else None
+    batt_pct = int(batt_match.group(2)) if batt_match else None
+
+    diagnosis = []
+    summary_parts = []
+    fix_steps: list[str] = []
+
+    if max_temp is not None:
+        if max_temp >= 85.0:
+            prob = f"High hardware temperature ({max_temp}°C) - Thermal Throttling Risk"
+            cause = (
+                f"Processor core temperatures have reached {max_temp}°C, which is near the critical "
+                "thermal threshold. The Linux kernel may throttle CPU frequency to prevent hardware damage."
+            )
+            fixes = [
+                "Ensure laptop vents are clean and unobstructed by dust.",
+                "Inspect background CPU hogs using: ps aux --sort=-%cpu | head -n 10",
+                "Elevate the laptop or use an external cooling pad.",
+                "Check for runaway processes and lower CPU power governor.",
+            ]
+            sev = "critical"
+        elif max_temp >= 70.0:
+            prob = f"Elevated hardware temperature ({max_temp}°C)"
+            cause = f"System temperature is moderately high at {max_temp}°C under current workload."
+            fixes = [
+                "Monitor CPU-heavy applications: ps aux",
+                "Ensure adequate laptop airflow.",
+            ]
+            sev = "medium"
+        else:
+            prob = f"Hardware temperatures are normal (highest is {max_temp}°C)"
+            cause = f"Hardware temperature sensors report normal thermal conditions ({max_temp}°C)."
+            fixes = ["No cooling remediation required."]
+            sev = "low"
+
+        diagnosis.append(
+            {
+                "problem": prob,
+                "severity": sev,
+                "cause": cause,
+                "evidence": f"Peak sensor reading: {max_temp}°C",
+                "confidence": "high",
+                "fix_recommendations": fixes,
+            }
+        )
+        summary_parts.append(cause)
+        fix_steps.extend(fixes)
+
+    if batt_pct is not None:
+        prob = f"Battery status: {batt_state} ({batt_pct}%)"
+        cause = f"System battery is {batt_state} at {batt_pct}% capacity."
+        b_fixes = []
+        if batt_pct <= 15 and "Discharging" in (batt_state or ""):
+            b_fixes.append("Connect AC power adapter immediately to prevent sudden system shutdown.")
+            b_fixes.append("Dim display brightness and enable power saver mode.")
+        else:
+            b_fixes.append("Battery state is functioning normally.")
+
+        diagnosis.append(
+            {
+                "problem": prob,
+                "severity": "high" if (batt_pct <= 15 and "Discharging" in (batt_state or "")) else "low",
+                "cause": cause,
+                "evidence": f"acpi: Battery {batt_state}, {batt_pct}%",
+                "confidence": "high",
+                "fix_recommendations": b_fixes,
+            }
+        )
+        summary_parts.append(cause)
+        fix_steps.extend(b_fixes)
+
+    if not diagnosis:
+        return None
+
+    full_summary = " ".join(summary_parts)
+    return {
+        "diagnosis": diagnosis,
+        "summary": full_summary,
+        "cause": diagnosis[0]["cause"],
+        "fix_recommendations": fix_steps,
+        "next_actions": [
+            {"command_id": "sensors", "options": [], "reason": "Monitor live temperatures"},
+            {"command_id": "uptime", "options": [], "reason": "Check load average"},
+        ],
+        "enough_evidence": True,
+    }
+
+
+def _analyze_bluetooth_domain(
+    results: list[dict[str, Any]],
+) -> Optional[dict[str, Any]]:
+    """Inspect Bluetooth controller, paired devices, and radio blocks."""
+    bt_out = _get_combined_stdout("bluetoothctl", results)
+    rf_out = _get_combined_stdout("rfkill", results)
+
+    is_soft_blocked = bool("bluetooth" in rf_out.lower() and "soft blocked: yes" in rf_out.lower())
+    is_hard_blocked = bool("bluetooth" in rf_out.lower() and "hard blocked: yes" in rf_out.lower())
+    is_powered = bool("powered: yes" in bt_out.lower())
+
+    diagnosis = []
+    if is_hard_blocked:
+        prob = "Bluetooth is disabled by physical hardware switch (Hard Blocked)"
+        cause = "A physical hardware switch or BIOS setting has turned off the Bluetooth radio."
+        fixes = [
+            "Toggle the physical wireless/Bluetooth switch or Fn key on your laptop.",
+            "Verify Bluetooth is enabled in the computer BIOS/UEFI settings.",
+        ]
+        sev = "high"
+    elif is_soft_blocked:
+        prob = "Bluetooth radio is disabled via software (Soft Blocked)"
+        cause = "The Linux kernel rfkill subsystem has soft-blocked the Bluetooth radio."
+        fixes = [
+            "Unblock Bluetooth radio: sudo rfkill unblock bluetooth",
+            "Power on Bluetooth controller: bluetoothctl power on",
+        ]
+        sev = "medium"
+    elif not is_powered and "Controller" in bt_out:
+        prob = "Bluetooth controller is powered off"
+        cause = "The Bluetooth controller is recognized by the kernel, but is currently powered down."
+        fixes = [
+            "Power on controller: bluetoothctl power on",
+            "Restart Bluetooth daemon: sudo systemctl restart bluetooth",
+        ]
+        sev = "medium"
+    elif "No default controller available" in bt_out:
+        prob = "No Bluetooth adapter or controller detected"
+        cause = "No Bluetooth hardware controller was found. The adapter may be missing, disconnected, or lacks driver firmware."
+        fixes = [
+            "Inspect USB hardware: lsusb",
+            "Check kernel dmesg logs for Bluetooth firmware loading errors: journalctl -k -b | grep -i blue",
+        ]
+        sev = "high"
+    else:
+        prob = "Bluetooth controller is active and powered on"
+        cause = "Bluetooth controller is operational and ready to connect to devices."
+        fixes = [
+            "To connect to a device: bluetoothctl connect <MAC-address>",
+            "Scan for discoverable devices: bluetoothctl scan on",
+        ]
+        sev = "low"
+
+    diagnosis.append(
+        {
+            "problem": prob,
+            "severity": sev,
+            "cause": cause,
+            "evidence": bt_out.splitlines()[0] if bt_out.splitlines() else "rfkill status checked",
+            "confidence": "high",
+            "fix_recommendations": fixes,
+        }
+    )
+
+    return {
+        "diagnosis": diagnosis,
+        "summary": cause,
+        "cause": cause,
+        "fix_recommendations": fixes,
+        "next_actions": [
+            {"command_id": "bluetoothctl", "options": ["show"], "reason": "Check controller power and state"},
+            {"command_id": "rfkill", "options": ["list", "bluetooth"], "reason": "Verify radio block status"},
+        ],
+        "enough_evidence": True,
+    }
+
+
+def _analyze_audio_domain(
+    results: list[dict[str, Any]],
+) -> Optional[dict[str, Any]]:
+    """Inspect sound server (PulseAudio / PipeWire) and audio sinks/sources."""
+    pactl_out = _get_combined_stdout("pactl", results)
+
+    has_sinks = bool("sinks" in pactl_out or "alsa_output" in pactl_out or "Sink #" in pactl_out)
+    is_dummy = bool("auto_null" in pactl_out or "dummy" in pactl_out.lower())
+    server_match = re.search(r"Server Name:\s*([^\n]+)", pactl_out)
+    server_name = server_match.group(1).strip() if server_match else "Audio server"
+
+    diagnosis = []
+    if is_dummy:
+        prob = "Audio output is routed to 'Dummy Output' / Null Sink"
+        cause = (
+            f"The sound server ({server_name}) is running, but no physical audio output hardware "
+            "was detected or claimed by the audio driver, falling back to a null dummy sink."
+        )
+        fixes = [
+            "Check if user is in the audio group: id",
+            "Restart user sound server: systemctl --user restart pipewire pipewire-pulse wireplumber (or pulseaudio)",
+            "Inspect PCI sound cards: lspci -k | grep -i audio",
+            "Inspect kernel sound modules: lsmod | grep -i snd",
+        ]
+        sev = "high"
+    elif has_sinks:
+        prob = f"Audio system is operational ({server_name})"
+        cause = f"The Linux audio server ({server_name}) is active with valid playback sinks detected."
+        fixes = [
+            "If volume is silent, unmute output device using pactl or desktop settings.",
+            "Test sound output: paplay /usr/share/sounds/alsa/Front_Center.wav",
+        ]
+        sev = "low"
+    else:
+        prob = f"Sound server status verified ({server_name})"
+        cause = f"{server_name} reported status information."
+        fixes = ["Verify application audio stream routing: pactl list short sink-inputs"]
+        sev = "low"
+
+    diagnosis.append(
+        {
+            "problem": prob,
+            "severity": sev,
+            "cause": cause,
+            "evidence": pactl_out.splitlines()[0] if pactl_out.splitlines() else "pactl info checked",
+            "confidence": "high",
+            "fix_recommendations": fixes,
+        }
+    )
+
+    return {
+        "diagnosis": diagnosis,
+        "summary": cause,
+        "cause": cause,
+        "fix_recommendations": fixes,
+        "next_actions": [
+            {"command_id": "pactl", "options": ["info"], "reason": "Check sound server details"},
+            {"command_id": "pactl", "options": ["list", "short", "sinks"], "reason": "Verify output sinks"},
+        ],
+        "enough_evidence": True,
+    }
+
+
+def _analyze_package_domain(
+    results: list[dict[str, Any]],
+) -> Optional[dict[str, Any]]:
+    """Inspect package manager consistency and upgradable packages."""
+    dpkg_out = _get_combined_stdout("dpkg", results)
+    apt_out = _get_combined_stdout("apt", results) + "\n" + _get_combined_stdout("apt-get", results)
+
+    has_broken_dpkg = bool(dpkg_out.strip())
+    upgradable_count = len([l for l in apt_out.splitlines() if "/" in l and "upgradable" not in l])
+
+    diagnosis = []
+    if has_broken_dpkg:
+        prob = "Unconfigured or interrupted packages detected (dpkg audit failure)"
+        cause = "One or more system packages were interrupted during installation or failed configuration scripts."
+        evid = "dpkg --audit:\n" + dpkg_out.strip()[:200]
+        fixes = [
+            "Resume and complete unconfigured packages: sudo dpkg --configure -a",
+            "Fix broken dependencies: sudo apt-get install -f",
+        ]
+        sev = "high"
+    elif upgradable_count > 0:
+        prob = f"Package manager healthy with {upgradable_count} package updates available"
+        cause = f"The package database is consistent. There are {upgradable_count} software updates ready to install."
+        evid = f"apt list --upgradable: {upgradable_count} package(s) available for upgrade."
+        fixes = [
+            "Review updates: apt list --upgradable",
+            "Apply safe system upgrades: sudo apt update && sudo apt upgrade",
+        ]
+        sev = "low"
+    else:
+        prob = "Package database is healthy and consistent"
+        cause = "No broken packages or unmet dependencies found in dpkg audit."
+        evid = "dpkg --audit: 0 broken packages reported."
+        fixes = ["No package repair needed."]
+        sev = "low"
+
+    diagnosis.append(
+        {
+            "problem": prob,
+            "severity": sev,
+            "cause": cause,
+            "evidence": evid,
+            "confidence": "high",
+            "fix_recommendations": fixes,
+        }
+    )
+
+    return {
+        "diagnosis": diagnosis,
+        "summary": cause,
+        "cause": cause,
+        "fix_recommendations": fixes,
+        "next_actions": [
+            {"command_id": "dpkg", "options": ["--audit"], "reason": "Check package state"},
+            {"command_id": "apt", "options": ["list", "--upgradable"], "reason": "List pending updates"},
+        ],
+        "enough_evidence": True,
+    }
+
+
+def _analyze_system_info_domain(
+    results: list[dict[str, Any]],
+) -> Optional[dict[str, Any]]:
+    """Inspect Linux distribution release, kernel version, and CPU architecture."""
+    lsb_out = _get_combined_stdout("lsb_release", results)
+    uname_out = _get_combined_stdout("uname", results)
+    host_out = _get_combined_stdout("hostnamectl", results)
+    lscpu_out = _get_combined_stdout("lscpu", results)
+
+    desc_match = re.search(r"Description:\s*([^\n]+)", lsb_out)
+    distro_desc = desc_match.group(1).strip() if desc_match else "Linux"
+
+    kernel_match = re.search(r"Linux\s+\S+\s+(\S+)", uname_out)
+    kernel_release = kernel_match.group(1).strip() if kernel_match else "Standard kernel"
+
+    cpu_match = re.search(r"Model name:\s*([^\n]+)", lscpu_out)
+    cpu_model = cpu_match.group(1).strip() if cpu_match else "CPU"
+
+    prob = f"System Specs: {distro_desc} (Kernel: {kernel_release})"
+    cause = f"Operating system verified as {distro_desc} running Linux kernel {kernel_release} on {cpu_model}."
+    evid = f"lsb_release: {distro_desc}\nuname -a: {uname_out.strip()[:100]}"
+    fixes = [
+        "To check kernel update status: apt list --upgradable | grep -i linux-image",
+        "View CPU hardware details: lscpu",
+    ]
+
+    return {
+        "diagnosis": [
+            {
+                "problem": prob,
+                "severity": "low",
+                "cause": cause,
+                "evidence": evid,
+                "confidence": "high",
+                "fix_recommendations": fixes,
+            }
+        ],
+        "summary": cause,
+        "cause": cause,
+        "fix_recommendations": fixes,
+        "next_actions": [
+            {"command_id": "uname", "options": ["-a"], "reason": "Check full kernel details"},
+            {"command_id": "lscpu", "options": [], "reason": "Check CPU specifications"},
+        ],
+        "enough_evidence": True,
+    }
+
+
 def build_fallback_analysis(
     user_request: str,
     execution_results: list[dict[str, Any]],
@@ -799,12 +1216,24 @@ def build_fallback_analysis(
     domain_analysis: Optional[dict[str, Any]] = None
 
     if successful_results:
-        if any(k in successful_cids for k in ["ip", "nmcli", "resolvectl", "rfkill"]):
+        if "bluetoothctl" in successful_cids:
+            domain_analysis = _analyze_bluetooth_domain(successful_results)
+        elif any(k in successful_cids for k in ["ip", "nmcli", "resolvectl", "rfkill"]):
             domain_analysis = _analyze_network_domain(successful_results)
         elif "free" in successful_cids:
             domain_analysis = _analyze_memory_domain(successful_results)
         elif "df" in successful_cids:
             domain_analysis = _analyze_disk_domain(successful_results)
+        elif "systemd-analyze" in successful_cids:
+            domain_analysis = _analyze_boot_domain(successful_results)
+        elif "sensors" in successful_cids or "acpi" in successful_cids:
+            domain_analysis = _analyze_thermal_battery_domain(successful_results)
+        elif "pactl" in successful_cids:
+            domain_analysis = _analyze_audio_domain(successful_results)
+        elif any(k in successful_cids for k in ["dpkg", "apt", "apt-get"]):
+            domain_analysis = _analyze_package_domain(successful_results)
+        elif any(k in successful_cids for k in ["lsb_release", "hostnamectl"]) or ("uname" in successful_cids and "uptime" not in successful_cids):
+            domain_analysis = _analyze_system_info_domain(successful_results)
         elif "systemctl" in successful_cids:
             domain_analysis = _analyze_service_domain(successful_results)
         elif "uptime" in successful_cids:

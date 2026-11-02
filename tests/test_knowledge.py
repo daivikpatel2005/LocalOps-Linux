@@ -53,6 +53,10 @@ class TestKnowledge(unittest.TestCase):
             ("Why is my battery draining fast?", "battery_power"),
             ("What ports are open?", "ports_listening_services"),
             ("Why is CPU usage high?", "cpu_bottleneck"),
+            ("Why is my boot so slow?", "slow_boot_startup"),
+            ("What OS am I running?", "os_distribution_info"),
+            ("Cannot reach local router", "arp_network_neighbors"),
+            ("Wrong system language", "locale_timezone_keyboard"),
         ]
 
         for query, expected_wid in expected_matches:

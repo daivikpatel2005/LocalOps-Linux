@@ -57,13 +57,15 @@ Final Diagnosis & Observations
 
 ## 3. Supported Troubleshooting Categories
 
-LocalOps includes 24 pre-defined, tested diagnostic workflows covering 39 allow-listed, read-only commands:
+LocalOps includes **28 pre-defined, tested diagnostic workflows** covering **45 allow-listed, read-only commands** and over 190 safe command variations:
+
+> **Full Troubleshooting Guide:** For the complete list of questions you can ask, sample prompts, and expected diagnoses, see [WHAT_YOU_CAN_ASK_LOCALOPS.md](WHAT_YOU_CAN_ASK_LOCALOPS.md).
 
 | Workflow ID | Category & Scope | Candidate Diagnostic Commands |
 |---|---|---|
 | `system_slow` | Overall system slowdown and load pressure | `uptime`, `free -h`, `df -h`, `ps aux` |
 | `memory_problem` | RAM exhaustion, swap pressure, high memory consumers | `free -h`, `ps aux`, `uptime` |
-| `disk_space` | Filesystem utilization and mount point exhaustion | `df -h`, `findmnt`, `lsblk -f` |
+| `disk_space` | Filesystem utilization and mount point exhaustion | `df -h`, `lsblk -f`, `findmnt` |
 | `process_problem` | CPU-heavy processes and load inspection | `uptime`, `ps aux` |
 | `service_problem` | Failed systemd units and daemon errors | `systemctl --failed`, `systemctl --user --failed` |
 | `network_problem` | IP connectivity, routing, and DNS resolution | `ip link`, `ip addr`, `ip route`, `resolvectl status` |
@@ -85,6 +87,10 @@ LocalOps includes 24 pre-defined, tested diagnostic workflows covering 39 allow-
 | `kernel_module_driver` | Loaded Linux kernel modules, PCI/USB driver bindings | `lsmod`, `lspci`, `lsusb`, `uname -a` |
 | `system_specs_inventory` | Full system overview: CPU, memory, OS, disks | `lscpu`, `free -h`, `df -h`, `uname -a`, `lsblk -f` |
 | `inode_exhaustion` | Filesystem inode capacity and exhausted inode tables | `df -i`, `df -h`, `findmnt` |
+| `slow_boot_startup` | Slow boot time, startup bottlenecks, service delay | `systemd-analyze time`, `systemd-analyze blame`, `systemctl --failed` |
+| `os_distribution_info` | Distribution release, Ubuntu version, kernel release | `lsb_release -a`, `uname -a`, `hostnamectl status` |
+| `arp_network_neighbors`| Subnet ARP resolution, gateway reachability | `ip neigh`, `ip -brief address`, `ip route` |
+| `locale_timezone_keyboard`| System language, encoding, keyboard keymap | `localectl status`, `timedatectl status` |
 
 ---
 

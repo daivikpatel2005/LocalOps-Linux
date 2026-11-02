@@ -15,7 +15,14 @@ from typing import Any, Optional
 from .database import (
     DEFAULT_DB_PATH,
     DEFAULT_JSON_PATH,
+    ensure_db_ready,
+    get_db_all_commands,
+    get_db_all_workflows,
+    get_db_command,
+    get_db_triggers,
+    get_db_workflow,
     init_db,
+    is_database_populated,
     load_knowledge_from_db,
     sync_knowledge_to_db,
 )
@@ -97,6 +104,21 @@ _STEM_MAP = {
     "throttling": "throttle",
     "throttled": "throttle",
     "iowait": "iowait",
+    "booting": "boot",
+    "startup": "boot",
+    "distro": "distro",
+    "distribution": "distro",
+    "distributions": "distro",
+    "neighbor": "neighbor",
+    "neighbors": "neighbor",
+    "arp": "arp",
+    "locale": "locale",
+    "locales": "locale",
+    "keymap": "keyboard",
+    "keymaps": "keyboard",
+    "keyboards": "keyboard",
+    "timezone": "time",
+    "timezones": "time",
 }
 
 _STOP_WORDS = {
@@ -125,14 +147,12 @@ _STOP_WORDS = {
 
 
 def ensure_database_ready() -> None:
-    """Ensure SQLite database is initialized and synchronized with commands.json."""
-    if not DB_FILE.is_file():
-        init_db(DB_FILE)
-        sync_knowledge_to_db(KNOWLEDGE_FILE, DB_FILE)
+    """Ensure SQLite database is initialized and populated."""
+    ensure_db_ready(DB_FILE, KNOWLEDGE_FILE)
 
 
 def load_knowledge(force_reload: bool = False, use_db: bool = True) -> dict[str, Any]:
-    """Load the complete LocalOps knowledge base, preferring SQLite."""
+    """Load the complete LocalOps knowledge base, executing via SQLite."""
     global _CACHED_KNOWLEDGE
 
     if _CACHED_KNOWLEDGE is not None and not force_reload:
@@ -146,48 +166,76 @@ def load_knowledge(force_reload: bool = False, use_db: bool = True) -> dict[str,
                 _CACHED_KNOWLEDGE = data
                 return data
         except Exception:
-            # Fall back to direct JSON if DB fails
             pass
 
-    if not KNOWLEDGE_FILE.is_file():
-        raise FileNotFoundError(
-            f"Knowledge file not found at: {KNOWLEDGE_FILE}"
-        )
+    # Fallback to direct JSON only if DB is unavailable and commands.json exists
+    if KNOWLEDGE_FILE.is_file():
+        with open(KNOWLEDGE_FILE, "r", encoding="utf-8") as file:
+            data = json.load(file)
 
-    with open(KNOWLEDGE_FILE, "r", encoding="utf-8") as file:
-        data = json.load(file)
+        if not isinstance(data, dict):
+            raise ValueError("Knowledge base root must be a JSON object.")
 
-    if not isinstance(data, dict):
-        raise ValueError("Knowledge base root must be a JSON object.")
+        _CACHED_KNOWLEDGE = data
+        return data
 
-    _CACHED_KNOWLEDGE = data
-    return data
+    raise FileNotFoundError(
+        f"Neither SQLite database at {DB_FILE} nor JSON at {KNOWLEDGE_FILE} could be loaded."
+    )
 
 
 def get_commands() -> dict[str, Any]:
-    """Return all known commands."""
+    """Return all known commands, querying SQLite directly."""
+    try:
+        ensure_database_ready()
+        if is_database_populated(DB_FILE):
+            return get_db_all_commands(DB_FILE)
+    except Exception:
+        pass
     knowledge = load_knowledge()
     return knowledge.get("commands", {})
 
 
 def get_command(command_id: str) -> Optional[dict[str, Any]]:
-    """Return one command definition or None."""
+    """Return one command definition directly from SQLite or None."""
     if not isinstance(command_id, str):
         return None
+    try:
+        ensure_database_ready()
+        if is_database_populated(DB_FILE):
+            cmd = get_db_command(command_id, DB_FILE)
+            if cmd is not None:
+                return cmd
+    except Exception:
+        pass
     commands = get_commands()
     return commands.get(command_id)
 
 
 def get_workflows() -> dict[str, Any]:
-    """Return all workflows."""
+    """Return all workflows, querying SQLite directly."""
+    try:
+        ensure_database_ready()
+        if is_database_populated(DB_FILE):
+            return get_db_all_workflows(DB_FILE)
+    except Exception:
+        pass
     knowledge = load_knowledge()
     return knowledge.get("workflows", {})
 
 
 def get_workflow(workflow_id: str) -> Optional[dict[str, Any]]:
-    """Return one workflow definition or None."""
+    """Return one workflow definition directly from SQLite or None."""
     if not isinstance(workflow_id, str):
         return None
+    try:
+        ensure_database_ready()
+        if is_database_populated(DB_FILE):
+            wf = get_db_workflow(workflow_id, DB_FILE)
+            if wf is not None:
+                return wf
+    except Exception:
+        pass
     workflows = get_workflows()
     return workflows.get(workflow_id)
 
@@ -209,7 +257,8 @@ def find_workflow(
     user_request: str,
 ) -> tuple[Optional[str], Optional[dict[str, Any]]]:
     """
-    Find the best matching workflow using intelligent natural-language trigger matching.
+    Find the best matching workflow using intelligent natural-language trigger matching
+    queried directly from SQLite.
 
     Handles phrasing variations, word order differences, word forms (stemming),
     and punctuation.
@@ -232,67 +281,73 @@ def find_workflow(
     q_norm = " ".join(q_tokens)
     q_content = [t for t in q_tokens if t not in _STOP_WORDS]
 
-    workflows = get_workflows()
+    # Query triggers directly from SQLite
+    try:
+        ensure_database_ready()
+        trigger_pairs = (
+            get_db_triggers(DB_FILE) if is_database_populated(DB_FILE) else []
+        )
+    except Exception:
+        trigger_pairs = []
+
+    if not trigger_pairs:
+        # Fallback to in-memory workflows if DB trigger query is empty
+        workflows = get_workflows()
+        trigger_pairs = [
+            (wid, trig)
+            for wid, w in workflows.items()
+            for trig in w.get("triggers", [])
+        ]
 
     best_workflow_id: Optional[str] = None
-    best_workflow: Optional[dict[str, Any]] = None
     best_score = 0
 
-    for workflow_id, workflow in workflows.items():
-        triggers = workflow.get("triggers", [])
-        if not isinstance(triggers, list):
+    for workflow_id, trigger in trigger_pairs:
+        if not isinstance(trigger, str) or not trigger.strip():
             continue
 
-        for trigger in triggers:
-            if not isinstance(trigger, str) or not trigger.strip():
-                continue
+        # Check 1: Direct substring in raw or normalized query
+        raw_trig_lower = trigger.lower().strip()
+        if raw_trig_lower in request_str.lower():
+            score = 100 + len(raw_trig_lower)
+            if score > best_score:
+                best_score = score
+                best_workflow_id = workflow_id
+            continue
 
-            # Check 1: Direct substring in raw or normalized query
-            raw_trig_lower = trigger.lower().strip()
-            if raw_trig_lower in request_str.lower():
-                score = 100 + len(raw_trig_lower)
+        t_tokens = _tokenize_text(trigger)
+        t_norm = " ".join(t_tokens)
+        if t_norm and t_norm in q_norm:
+            score = 90 + len(t_norm)
+            if score > best_score:
+                best_score = score
+                best_workflow_id = workflow_id
+            continue
+
+        t_content = [t for t in t_tokens if t not in _STOP_WORDS]
+        if not t_content:
+            continue
+
+        # Check 2: All content words in trigger are present in request
+        if all(t in q_tokens for t in t_content):
+            score = 50 + len(t_content) * 10
+            if score > best_score:
+                best_score = score
+                best_workflow_id = workflow_id
+            continue
+
+        # Check 3: Overlap of content words (at least 2 matching and covering the core trigger)
+        if q_content:
+            overlap = set(t_content).intersection(q_content)
+            if len(overlap) >= 2 and len(overlap) >= len(t_content) * 0.75:
+                score = 30 + len(overlap) * 5
                 if score > best_score:
                     best_score = score
                     best_workflow_id = workflow_id
-                    best_workflow = workflow
-                continue
-
-            t_tokens = _tokenize_text(trigger)
-            t_norm = " ".join(t_tokens)
-            if t_norm and t_norm in q_norm:
-                score = 90 + len(t_norm)
-                if score > best_score:
-                    best_score = score
-                    best_workflow_id = workflow_id
-                    best_workflow = workflow
-                continue
-
-            t_content = [t for t in t_tokens if t not in _STOP_WORDS]
-            if not t_content:
-                continue
-
-            # Check 2: All content words in trigger are present in request
-            if all(t in q_tokens for t in t_content):
-                score = 50 + len(t_content) * 10
-                if score > best_score:
-                    best_score = score
-                    best_workflow_id = workflow_id
-                    best_workflow = workflow
-                continue
-
-            # Check 3: Overlap of content words (at least 2 matching and covering the core trigger)
-            if q_content:
-                overlap = set(t_content).intersection(q_content)
-                if len(overlap) >= 2 and len(overlap) >= len(t_content) * 0.75:
-                    score = 30 + len(overlap) * 5
-                    if score > best_score:
-                        best_score = score
-                        best_workflow_id = workflow_id
-                        best_workflow = workflow
 
     # Threshold: only accept confident matches (score >= 30)
-    if best_score >= 30:
-        return best_workflow_id, best_workflow
+    if best_score >= 30 and best_workflow_id:
+        return best_workflow_id, get_workflow(best_workflow_id)
 
     return None, None
 
@@ -309,51 +364,50 @@ def get_supported_troubleshooting_areas() -> list[str]:
 
 def build_context(workflow_id: Optional[str] = None) -> str:
     """
-    Provide the SLM with a focused context.
+    Provide the SLM with a focused context queried directly from SQLite.
 
     If a workflow_id is provided, includes ONLY relevant candidate commands
     and decision rules to avoid overflowing the SLM context window.
     """
-    knowledge = load_knowledge()
-    all_commands = knowledge.get("commands", {})
-    all_workflows = knowledge.get("workflows", {})
-
-    if workflow_id and workflow_id in all_workflows:
-        target_workflow = all_workflows[workflow_id]
-        candidates = target_workflow.get("candidate_commands", [])
-
-        # Filter commands to candidate commands only
-        relevant_cmd_ids = {c.get("command_id") for c in candidates if c.get("command_id")}
-        relevant_commands = {
-            cid: all_commands[cid]
-            for cid in relevant_cmd_ids
-            if cid in all_commands
-        }
-
-        context = {
-            "schema_version": knowledge.get("schema_version", "1.0"),
-            "active_workflow_id": workflow_id,
-            "workflow": target_workflow,
-            "available_commands": relevant_commands,
-        }
-    else:
-        # High-level concise context
-        summary_workflows = {
-            wid: {
-                "description": w.get("description", ""),
-                "candidate_command_ids": [
-                    c.get("command_id")
-                    for c in w.get("candidate_commands", [])
-                    if isinstance(c, dict)
-                ],
+    if workflow_id:
+        target_workflow = get_workflow(workflow_id)
+        if target_workflow:
+            candidates = target_workflow.get("candidate_commands", [])
+            relevant_cmd_ids = {
+                c.get("command_id") for c in candidates if c.get("command_id")
             }
-            for wid, w in all_workflows.items()
-        }
+            relevant_commands = {}
+            for cid in relevant_cmd_ids:
+                cmd_def = get_command(cid)
+                if cmd_def:
+                    relevant_commands[cid] = cmd_def
 
-        context = {
-            "schema_version": knowledge.get("schema_version", "1.0"),
-            "workflows": summary_workflows,
-            "commands": all_commands,
-        }
+            context = {
+                "schema_version": "1.0",
+                "active_workflow_id": workflow_id,
+                "workflow": target_workflow,
+                "available_commands": relevant_commands,
+            }
+            return json.dumps(context, indent=2)
 
+    # High-level concise context
+    all_workflows = get_workflows()
+    all_commands = get_commands()
+    summary_workflows = {
+        wid: {
+            "description": w.get("description", ""),
+            "candidate_command_ids": [
+                c.get("command_id")
+                for c in w.get("candidate_commands", [])
+                if isinstance(c, dict)
+            ],
+        }
+        for wid, w in all_workflows.items()
+    }
+
+    context = {
+        "schema_version": "1.0",
+        "workflows": summary_workflows,
+        "commands": all_commands,
+    }
     return json.dumps(context, indent=2)

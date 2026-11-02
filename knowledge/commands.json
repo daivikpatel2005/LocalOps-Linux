@@ -23,11 +23,26 @@
       "read_only": true,
       "requires_sudo": false,
       "requires_confirmation": true,
-      "options": {},
+      "options": {
+        "-p": {
+          "description": "Show uptime in pretty human-readable format",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
+        },
+        "-s": {
+          "description": "Show system up since date and time",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
+        }
+      },
       "combinations": {
-        "allowed": false,
+        "allowed": true,
         "examples": [
-          "uptime"
+          "uptime",
+          "uptime -p",
+          "uptime -s"
         ]
       },
       "output": {
@@ -58,13 +73,57 @@
           "description": "Display memory sizes in human-readable units",
           "type": "flag",
           "combinable": true
+        },
+        "-m": {
+          "description": "Display memory sizes in megabytes (MB)",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
+        },
+        "-g": {
+          "description": "Display memory sizes in gigabytes (GB)",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
+        },
+        "-k": {
+          "description": "Display memory sizes in kilobytes (KB)",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
+        },
+        "-b": {
+          "description": "Display memory sizes in bytes",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
+        },
+        "-t": {
+          "description": "Display a line showing the total of RAM + swap",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
+        },
+        "-w": {
+          "description": "Wide mode: separates buffers and cache columns",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
         }
       },
       "combinations": {
         "allowed": true,
         "examples": [
           "free",
-          "free -h"
+          "free -h",
+          "free -m",
+          "free -g",
+          "free -k",
+          "free -b",
+          "free -h -w",
+          "free -h -t",
+          "free -m -t",
+          "free -m -w"
         ]
       },
       "output": {
@@ -104,6 +163,30 @@
           "type": "flag",
           "combinable": true,
           "requires": []
+        },
+        "-T": {
+          "description": "Print filesystem type (e.g. ext4, btrfs, tmpfs)",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
+        },
+        "-k": {
+          "description": "Display block sizes in 1-kilobyte blocks",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
+        },
+        "-m": {
+          "description": "Display block sizes in 1-megabyte blocks",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
+        },
+        "--total": {
+          "description": "Produce a grand total line at the bottom",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
         }
       },
       "combinations": {
@@ -111,7 +194,12 @@
         "examples": [
           "df",
           "df -h",
-          "df -i"
+          "df -i",
+          "df -h -T",
+          "df -T",
+          "df -h --total",
+          "df -k",
+          "df -m"
         ]
       },
       "output": {
@@ -144,13 +232,40 @@
           "description": "Show processes from all users in a user-oriented format",
           "type": "flag",
           "combinable": false
+        },
+        "-ef": {
+          "description": "Standard full-format process listing showing UID, PID, PPID",
+          "type": "token",
+          "combinable": false,
+          "requires": []
+        },
+        "auxf": {
+          "description": "ASCII forest / process hierarchy tree",
+          "type": "token",
+          "combinable": false,
+          "requires": []
+        },
+        "ax": {
+          "description": "List all processes without terminal control",
+          "type": "token",
+          "combinable": false,
+          "requires": []
+        },
+        "-e": {
+          "description": "Select all processes",
+          "type": "token",
+          "combinable": false,
+          "requires": []
         }
       },
       "combinations": {
         "allowed": true,
         "examples": [
-          "ps",
-          "ps aux"
+          "ps aux",
+          "ps -ef",
+          "ps auxf",
+          "ps ax",
+          "ps -e"
         ]
       },
       "output": {
@@ -194,6 +309,18 @@
           "requires": [
             "-l"
           ]
+        },
+        "-lh": {
+          "description": "Long listing with human readable sizes",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
+        },
+        "-la": {
+          "description": "Long listing showing all files",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
         }
       },
       "combinations": {
@@ -202,9 +329,10 @@
           "ls",
           "ls -l",
           "ls -a",
-          "ls -la",
+          "ls -l -a",
+          "ls -l -a -h",
           "ls -lh",
-          "ls -lah"
+          "ls -la"
         ]
       },
       "output": {
@@ -243,11 +371,40 @@
       "read_only": true,
       "requires_sudo": false,
       "requires_confirmation": true,
-      "options": {},
+      "options": {
+        "-u": {
+          "description": "Print effective user ID number",
+          "type": "flag",
+          "combinable": false,
+          "requires": []
+        },
+        "-g": {
+          "description": "Print effective group ID number",
+          "type": "flag",
+          "combinable": false,
+          "requires": []
+        },
+        "-un": {
+          "description": "Print effective user name",
+          "type": "flag",
+          "combinable": false,
+          "requires": []
+        },
+        "-gn": {
+          "description": "Print effective group name",
+          "type": "flag",
+          "combinable": false,
+          "requires": []
+        }
+      },
       "combinations": {
-        "allowed": false,
+        "allowed": true,
         "examples": [
-          "id"
+          "id",
+          "id -u",
+          "id -g",
+          "id -un",
+          "id -gn"
         ]
       },
       "output": {
@@ -270,13 +427,48 @@
           "description": "Show all uname information",
           "type": "token",
           "combinable": true
+        },
+        "-r": {
+          "description": "Print Linux kernel release version",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
+        },
+        "-m": {
+          "description": "Print machine hardware architecture",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
+        },
+        "-s": {
+          "description": "Print operating system / kernel name",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
+        },
+        "-v": {
+          "description": "Print kernel version build date",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
+        },
+        "-n": {
+          "description": "Print network node hostname",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
         }
       },
       "combinations": {
         "allowed": true,
         "examples": [
           "uname",
-          "uname -a"
+          "uname -a",
+          "uname -r",
+          "uname -m",
+          "uname -s",
+          "uname -v",
+          "uname -r -m"
         ]
       },
       "output": {
@@ -299,13 +491,42 @@
           "description": "Include filesystem information",
           "type": "token",
           "combinable": true
+        },
+        "-a": {
+          "description": "List all block devices including RAM disks",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
+        },
+        "-m": {
+          "description": "Output device permissions, owner, and group permissions",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
+        },
+        "-d": {
+          "description": "Do not print slave partitions (disk level only)",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
+        },
+        "-t": {
+          "description": "Output block device topology information",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
         }
       },
       "combinations": {
         "allowed": true,
         "examples": [
           "lsblk",
-          "lsblk -f"
+          "lsblk -f",
+          "lsblk -a",
+          "lsblk -m",
+          "lsblk -d",
+          "lsblk -f -m",
+          "lsblk -t"
         ]
       },
       "output": {
@@ -323,11 +544,33 @@
       "read_only": true,
       "requires_sudo": false,
       "requires_confirmation": true,
-      "options": {},
+      "options": {
+        "-l": {
+          "description": "List format instead of hierarchical tree",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
+        },
+        "-D": {
+          "description": "Display df-style filesystem size and utilization columns",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
+        },
+        "-a": {
+          "description": "List all filesystems including pseudo filesystems",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
+        }
+      },
       "combinations": {
-        "allowed": false,
+        "allowed": true,
         "examples": [
-          "findmnt"
+          "findmnt",
+          "findmnt -l",
+          "findmnt -D",
+          "findmnt -a"
         ]
       },
       "output": {
@@ -360,13 +603,29 @@
           "description": "Inspect user services",
           "type": "token",
           "combinable": true
+        },
+        "is-system-running": {
+          "description": "Query overall operational state of systemd manager",
+          "type": "token",
+          "combinable": false,
+          "requires": []
+        },
+        "list-units": {
+          "description": "List loaded systemd units",
+          "type": "token",
+          "combinable": true,
+          "requires": []
         }
       },
       "combinations": {
         "allowed": true,
         "examples": [
+          "systemctl --failed",
           "systemctl --failed --no-pager",
-          "systemctl --user --failed --no-pager"
+          "systemctl --user --failed",
+          "systemctl --user --failed --no-pager",
+          "systemctl is-system-running",
+          "systemctl list-units --failed --no-pager"
         ]
       },
       "output": {
@@ -420,13 +679,41 @@
           "type": "flag",
           "combinable": true,
           "requires": []
+        },
+        "20": {
+          "description": "Show 20 entries",
+          "type": "token",
+          "combinable": true,
+          "requires": [
+            "-n"
+          ]
+        },
+        "100": {
+          "description": "Show 100 entries",
+          "type": "token",
+          "combinable": true,
+          "requires": [
+            "-n"
+          ]
+        },
+        "-xe": {
+          "description": "Show catalog explanations and jump to end",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
         }
       },
       "combinations": {
         "allowed": true,
         "examples": [
           "journalctl -p err -b -n 50 --no-pager",
-          "journalctl -k"
+          "journalctl -p err -b -n 20 --no-pager",
+          "journalctl -p err -b -n 100 --no-pager",
+          "journalctl -p err -n 50 --no-pager",
+          "journalctl -k --no-pager -n 50",
+          "journalctl -k -b --no-pager -n 50",
+          "journalctl -b --no-pager -n 50",
+          "journalctl -xe --no-pager -n 50"
         ]
       },
       "output": {
@@ -482,6 +769,24 @@
           "type": "token",
           "combinable": true,
           "requires": []
+        },
+        "neigh": {
+          "description": "Inspect ARP / neighbor cache table for subnet MAC mappings",
+          "type": "token",
+          "combinable": true,
+          "requires": []
+        },
+        "neighbor": {
+          "description": "Full name alias for neigh",
+          "type": "token",
+          "combinable": true,
+          "requires": []
+        },
+        "rule": {
+          "description": "Inspect routing policy database rules",
+          "type": "token",
+          "combinable": true,
+          "requires": []
         }
       },
       "combinations": {
@@ -490,11 +795,17 @@
           "ip -brief address",
           "ip -br address",
           "ip -br a",
+          "ip -br addr",
           "ip address",
           "ip addr",
           "ip a",
           "ip route",
-          "ip link"
+          "ip link",
+          "ip -brief link",
+          "ip -br link",
+          "ip neigh",
+          "ip neighbor",
+          "ip rule"
         ]
       },
       "output": {
@@ -537,13 +848,66 @@
           "description": "Active connections only",
           "type": "token",
           "combinable": true
+        },
+        "wifi": {
+          "description": "Wi-Fi subsystem",
+          "type": "token",
+          "combinable": true,
+          "requires": []
+        },
+        "general": {
+          "description": "General status",
+          "type": "token",
+          "combinable": true,
+          "requires": []
+        },
+        "networking": {
+          "description": "Networking control",
+          "type": "token",
+          "combinable": true,
+          "requires": []
+        },
+        "connectivity": {
+          "description": "Connectivity check",
+          "type": "token",
+          "combinable": true,
+          "requires": [
+            "networking"
+          ]
+        },
+        "radio": {
+          "description": "Radio switches",
+          "type": "token",
+          "combinable": true,
+          "requires": []
+        },
+        "all": {
+          "description": "All radios",
+          "type": "token",
+          "combinable": true,
+          "requires": [
+            "radio"
+          ]
+        },
+        "list": {
+          "description": "List available APs",
+          "type": "token",
+          "combinable": true,
+          "requires": [
+            "wifi"
+          ]
         }
       },
       "combinations": {
         "allowed": true,
         "examples": [
           "nmcli device status",
-          "nmcli connection show --active"
+          "nmcli connection show",
+          "nmcli connection show --active",
+          "nmcli general status",
+          "nmcli networking connectivity",
+          "nmcli radio all",
+          "nmcli device wifi list"
         ]
       },
       "output": {
@@ -566,12 +930,30 @@
           "description": "List radio devices",
           "type": "token",
           "combinable": true
+        },
+        "wifi": {
+          "description": "Filter to Wi-Fi radios",
+          "type": "token",
+          "combinable": true,
+          "requires": [
+            "list"
+          ]
+        },
+        "bluetooth": {
+          "description": "Filter to Bluetooth radios",
+          "type": "token",
+          "combinable": true,
+          "requires": [
+            "list"
+          ]
         }
       },
       "combinations": {
         "allowed": true,
         "examples": [
-          "rfkill list"
+          "rfkill list",
+          "rfkill list wifi",
+          "rfkill list bluetooth"
         ]
       },
       "output": {
@@ -594,12 +976,33 @@
           "description": "Resolver status",
           "type": "token",
           "combinable": true
+        },
+        "dns": {
+          "description": "Show configured DNS servers for all interfaces",
+          "type": "token",
+          "combinable": false,
+          "requires": []
+        },
+        "domain": {
+          "description": "Show search domains configured for all interfaces",
+          "type": "token",
+          "combinable": false,
+          "requires": []
+        },
+        "statistics": {
+          "description": "Display DNS transaction statistics and cache metrics",
+          "type": "token",
+          "combinable": false,
+          "requires": []
         }
       },
       "combinations": {
         "allowed": true,
         "examples": [
-          "resolvectl status"
+          "resolvectl status",
+          "resolvectl dns",
+          "resolvectl domain",
+          "resolvectl statistics"
         ]
       },
       "output": {
@@ -627,13 +1030,34 @@
           "description": "Known devices",
           "type": "token",
           "combinable": true
+        },
+        "list": {
+          "description": "List available Bluetooth controllers",
+          "type": "token",
+          "combinable": false,
+          "requires": []
+        },
+        "paired-devices": {
+          "description": "List paired Bluetooth devices",
+          "type": "token",
+          "combinable": false,
+          "requires": []
+        },
+        "version": {
+          "description": "Display bluetoothctl version",
+          "type": "token",
+          "combinable": false,
+          "requires": []
         }
       },
       "combinations": {
         "allowed": true,
         "examples": [
           "bluetoothctl show",
-          "bluetoothctl devices"
+          "bluetoothctl devices",
+          "bluetoothctl list",
+          "bluetoothctl paired-devices",
+          "bluetoothctl version"
         ]
       },
       "output": {
@@ -676,6 +1100,24 @@
           "description": "Input devices",
           "type": "token",
           "combinable": true
+        },
+        "sink-inputs": {
+          "description": "List playback audio streams",
+          "type": "token",
+          "combinable": true,
+          "requires": [
+            "list",
+            "short"
+          ]
+        },
+        "source-outputs": {
+          "description": "List capture audio streams",
+          "type": "token",
+          "combinable": true,
+          "requires": [
+            "list",
+            "short"
+          ]
         }
       },
       "combinations": {
@@ -683,7 +1125,9 @@
         "examples": [
           "pactl info",
           "pactl list short sinks",
-          "pactl list short sources"
+          "pactl list short sources",
+          "pactl list short sink-inputs",
+          "pactl list short source-outputs"
         ]
       },
       "output": {
@@ -706,12 +1150,27 @@
           "description": "Show time status",
           "type": "token",
           "combinable": true
+        },
+        "timesync-status": {
+          "description": "Show NTP network time synchronization status and server offset",
+          "type": "token",
+          "combinable": false,
+          "requires": []
+        },
+        "show": {
+          "description": "Show machine-readable time properties",
+          "type": "token",
+          "combinable": false,
+          "requires": []
         }
       },
       "combinations": {
         "allowed": true,
         "examples": [
-          "timedatectl status"
+          "timedatectl",
+          "timedatectl status",
+          "timedatectl timesync-status",
+          "timedatectl show"
         ]
       },
       "output": {
@@ -734,12 +1193,26 @@
           "description": "Audit package state",
           "type": "token",
           "combinable": true
+        },
+        "-C": {
+          "description": "Short alias for --audit",
+          "type": "flag",
+          "combinable": false,
+          "requires": []
+        },
+        "--print-architecture": {
+          "description": "Print target CPU architecture for dpkg packages",
+          "type": "flag",
+          "combinable": false,
+          "requires": []
         }
       },
       "combinations": {
         "allowed": true,
         "examples": [
-          "dpkg --audit"
+          "dpkg --audit",
+          "dpkg -C",
+          "dpkg --print-architecture"
         ]
       },
       "output": {
@@ -762,12 +1235,19 @@
           "description": "Check dependencies without installing or removing packages",
           "type": "token",
           "combinable": true
+        },
+        "-s": {
+          "description": "Simulate operation without altering package state",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
         }
       },
       "combinations": {
         "allowed": true,
         "examples": [
-          "apt-get check"
+          "apt-get check",
+          "apt-get -s check"
         ]
       },
       "output": {
@@ -795,12 +1275,21 @@
           "description": "Upgradable packages only",
           "type": "token",
           "combinable": true
+        },
+        "--installed": {
+          "description": "Filter listing to packages currently installed on the system",
+          "type": "token",
+          "combinable": true,
+          "requires": [
+            "list"
+          ]
         }
       },
       "combinations": {
         "allowed": true,
         "examples": [
-          "apt list --upgradable"
+          "apt list --upgradable",
+          "apt list --installed"
         ]
       },
       "output": {
@@ -828,12 +1317,20 @@
           "description": "Hide column headings",
           "type": "token",
           "combinable": true
+        },
+        "list-users": {
+          "description": "List all logged-in user accounts",
+          "type": "token",
+          "combinable": false,
+          "requires": []
         }
       },
       "combinations": {
         "allowed": true,
         "examples": [
-          "loginctl list-sessions --no-legend"
+          "loginctl list-sessions",
+          "loginctl list-sessions --no-legend",
+          "loginctl list-users"
         ]
       },
       "output": {
@@ -856,12 +1353,30 @@
           "description": "List installed apps",
           "type": "token",
           "combinable": true
+        },
+        "--app": {
+          "description": "List installed applications only",
+          "type": "token",
+          "combinable": true,
+          "requires": [
+            "list"
+          ]
+        },
+        "--runtime": {
+          "description": "List installed runtime libraries only",
+          "type": "token",
+          "combinable": true,
+          "requires": [
+            "list"
+          ]
         }
       },
       "combinations": {
         "allowed": true,
         "examples": [
-          "flatpak list"
+          "flatpak list",
+          "flatpak list --app",
+          "flatpak list --runtime"
         ]
       },
       "output": {
@@ -1019,11 +1534,33 @@
       "read_only": true,
       "requires_sudo": false,
       "requires_confirmation": true,
-      "options": {},
+      "options": {
+        "-k": {
+          "description": "Show kernel drivers and modules handling each device",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
+        },
+        "-nn": {
+          "description": "Show numeric vendor and device codes",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
+        },
+        "-v": {
+          "description": "Show verbose device configuration",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
+        }
+      },
       "combinations": {
-        "allowed": false,
+        "allowed": true,
         "examples": [
-          "lspci"
+          "lspci",
+          "lspci -k",
+          "lspci -nn",
+          "lspci -v"
         ]
       },
       "output": {
@@ -1041,11 +1578,26 @@
       "read_only": true,
       "requires_sudo": false,
       "requires_confirmation": true,
-      "options": {},
+      "options": {
+        "-t": {
+          "description": "Dump physical USB device hierarchy as a tree",
+          "type": "flag",
+          "combinable": false,
+          "requires": []
+        },
+        "-v": {
+          "description": "Show verbose USB device descriptors",
+          "type": "flag",
+          "combinable": false,
+          "requires": []
+        }
+      },
       "combinations": {
-        "allowed": false,
+        "allowed": true,
         "examples": [
-          "lsusb"
+          "lsusb",
+          "lsusb -t",
+          "lsusb -v"
         ]
       },
       "output": {
@@ -1066,11 +1618,19 @@
       "read_only": true,
       "requires_sudo": false,
       "requires_confirmation": true,
-      "options": {},
+      "options": {
+        "-u": {
+          "description": "Raw units output format",
+          "type": "flag",
+          "combinable": false,
+          "requires": []
+        }
+      },
       "combinations": {
         "allowed": true,
         "examples": [
-          "sensors"
+          "sensors",
+          "sensors -u"
         ]
       },
       "output": {
@@ -1109,14 +1669,29 @@
           "type": "flag",
           "combinable": true,
           "requires": []
+        },
+        "-a": {
+          "description": "Show AC power adapter status",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
+        },
+        "-i": {
+          "description": "Show battery capacity and design specifications",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
         }
       },
       "combinations": {
         "allowed": true,
         "examples": [
+          "acpi",
           "acpi -b",
           "acpi -t",
-          "acpi -V"
+          "acpi -V",
+          "acpi -a",
+          "acpi -b -i"
         ]
       },
       "output": {
@@ -1159,14 +1734,37 @@
           "type": "flag",
           "combinable": false,
           "requires": []
+        },
+        "5": {
+          "description": "Sample count of 5 iterations",
+          "type": "token",
+          "combinable": true,
+          "requires": [
+            "1"
+          ]
+        },
+        "-m": {
+          "description": "Display kernel slab allocator memory cache statistics",
+          "type": "flag",
+          "combinable": false,
+          "requires": []
+        },
+        "-d": {
+          "description": "Display disk read/write throughput statistics",
+          "type": "flag",
+          "combinable": false,
+          "requires": []
         }
       },
       "combinations": {
         "allowed": true,
         "examples": [
           "vmstat",
+          "vmstat -s",
           "vmstat 1 2",
-          "vmstat -s"
+          "vmstat 1 5",
+          "vmstat -m",
+          "vmstat -d"
         ]
       },
       "output": {
@@ -1204,6 +1802,44 @@
           "type": "flag",
           "combinable": true,
           "requires": []
+        },
+        "-c": {
+          "description": "Display CPU utilization report only",
+          "type": "flag",
+          "combinable": false,
+          "requires": []
+        },
+        "-d": {
+          "description": "Display device utilization report only",
+          "type": "flag",
+          "combinable": false,
+          "requires": []
+        },
+        "-z": {
+          "description": "Omit output for any devices with zero activity",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
+        },
+        "1": {
+          "description": "1 second interval",
+          "type": "token",
+          "combinable": true,
+          "requires": []
+        },
+        "2": {
+          "description": "2 iterations",
+          "type": "token",
+          "combinable": true,
+          "requires": [
+            "1"
+          ]
+        },
+        "-xz": {
+          "description": "Extended statistics omitting zero-activity devices",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
         }
       },
       "combinations": {
@@ -1211,7 +1847,11 @@
         "examples": [
           "iostat",
           "iostat -x",
-          "iostat -h"
+          "iostat -h",
+          "iostat -x -h",
+          "iostat -xz 1 2",
+          "iostat -c",
+          "iostat -d"
         ]
       },
       "output": {
@@ -1248,13 +1888,75 @@
           "type": "flag",
           "combinable": false,
           "requires": []
+        },
+        "-tulpn": {
+          "description": "Display listening TCP/UDP sockets with process names",
+          "type": "flag",
+          "combinable": false,
+          "requires": []
+        },
+        "-tlpn": {
+          "description": "Display listening TCP sockets with process names",
+          "type": "flag",
+          "combinable": false,
+          "requires": []
+        },
+        "-tln": {
+          "description": "Display listening TCP sockets without resolving names",
+          "type": "flag",
+          "combinable": false,
+          "requires": []
+        },
+        "-tun": {
+          "description": "Display TCP and UDP sockets without resolving names",
+          "type": "flag",
+          "combinable": false,
+          "requires": []
+        },
+        "-ta": {
+          "description": "Display all TCP sockets",
+          "type": "flag",
+          "combinable": false,
+          "requires": []
+        },
+        "-ua": {
+          "description": "Display all UDP sockets",
+          "type": "flag",
+          "combinable": false,
+          "requires": []
+        },
+        "-t": {
+          "description": "Display TCP sockets",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
+        },
+        "-u": {
+          "description": "Display UDP sockets",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
+        },
+        "-a": {
+          "description": "Display all sockets",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
         }
       },
       "combinations": {
         "allowed": true,
         "examples": [
           "ss -s",
-          "ss -tuln"
+          "ss -tuln",
+          "ss -tulpn",
+          "ss -tlpn",
+          "ss -tln",
+          "ss -tun",
+          "ss -ta",
+          "ss -ua",
+          "ss -t -a",
+          "ss -u -a"
         ]
       },
       "output": {
@@ -1275,11 +1977,26 @@
       "read_only": true,
       "requires_sudo": false,
       "requires_confirmation": true,
-      "options": {},
+      "options": {
+        "-e": {
+          "description": "Extended readable CPU topology format",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
+        },
+        "-p": {
+          "description": "Parseable CPU core topology format",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
+        }
+      },
       "combinations": {
         "allowed": true,
         "examples": [
-          "lscpu"
+          "lscpu",
+          "lscpu -e",
+          "lscpu -p"
         ]
       },
       "output": {
@@ -1319,13 +2036,35 @@
           "requires": [
             "-P"
           ]
+        },
+        "1": {
+          "description": "1 second interval",
+          "type": "token",
+          "combinable": true,
+          "requires": []
+        },
+        "2": {
+          "description": "2 count iterations",
+          "type": "token",
+          "combinable": true,
+          "requires": [
+            "1"
+          ]
+        },
+        "-u": {
+          "description": "Report CPU utilization metrics",
+          "type": "flag",
+          "combinable": false,
+          "requires": []
         }
       },
       "combinations": {
         "allowed": true,
         "examples": [
           "mpstat",
-          "mpstat -P ALL"
+          "mpstat -P ALL",
+          "mpstat -P ALL 1 2",
+          "mpstat -u"
         ]
       },
       "output": {
@@ -1365,6 +2104,278 @@
           "Used by"
         ]
       }
+    },
+    "lsb_release": {
+      "description": "Display Linux Standard Base and Ubuntu/Debian distribution release information",
+      "category": "system",
+      "use_when": [
+        "checking OS distribution version",
+        "Ubuntu version verification",
+        "Linux release info"
+      ],
+      "risk": "safe",
+      "read_only": true,
+      "requires_sudo": false,
+      "requires_confirmation": true,
+      "options": {
+        "-a": {
+          "description": "Show all LSB release information",
+          "type": "flag",
+          "combinable": false,
+          "requires": []
+        },
+        "-d": {
+          "description": "Show single-line OS distribution description",
+          "type": "flag",
+          "combinable": false,
+          "requires": []
+        },
+        "-r": {
+          "description": "Show OS release version number",
+          "type": "flag",
+          "combinable": false,
+          "requires": []
+        },
+        "-c": {
+          "description": "Show OS codename",
+          "type": "flag",
+          "combinable": false,
+          "requires": []
+        }
+      },
+      "combinations": {
+        "allowed": true,
+        "examples": [
+          "lsb_release -a",
+          "lsb_release -d",
+          "lsb_release -r",
+          "lsb_release -c"
+        ]
+      },
+      "output": {
+        "type": "system_info",
+        "important_fields": [
+          "distributor",
+          "description",
+          "release",
+          "codename"
+        ]
+      }
+    },
+    "top": {
+      "description": "Batch snapshot of CPU utilization, memory pressure, and top process rankings",
+      "category": "processes",
+      "use_when": [
+        "CPU bottleneck investigation",
+        "top process rankings",
+        "real-time system load snapshot"
+      ],
+      "risk": "safe",
+      "read_only": true,
+      "requires_sudo": false,
+      "requires_confirmation": true,
+      "options": {
+        "-b": {
+          "description": "Run in batch mode suitable for output capture",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
+        },
+        "-n": {
+          "description": "Number of snapshot iterations",
+          "type": "flag",
+          "combinable": true,
+          "requires": []
+        },
+        "1": {
+          "description": "Single iteration count",
+          "type": "token",
+          "combinable": true,
+          "requires": [
+            "-n"
+          ]
+        }
+      },
+      "combinations": {
+        "allowed": true,
+        "examples": [
+          "top -b -n 1"
+        ]
+      },
+      "output": {
+        "type": "process_snapshot",
+        "important_fields": [
+          "load_average",
+          "cpu_utilization",
+          "memory_usage",
+          "top_processes"
+        ]
+      }
+    },
+    "systemd-analyze": {
+      "description": "Analyze Linux system boot-up performance and slowest startup services",
+      "category": "services",
+      "use_when": [
+        "slow system boot",
+        "investigating startup delays",
+        "measuring boot duration"
+      ],
+      "risk": "safe",
+      "read_only": true,
+      "requires_sudo": false,
+      "requires_confirmation": true,
+      "options": {
+        "time": {
+          "description": "Display total time spent in kernel, initrd, and userspace boot",
+          "type": "token",
+          "combinable": false,
+          "requires": []
+        },
+        "blame": {
+          "description": "Print list of running units ordered by the time each took to initialize",
+          "type": "token",
+          "combinable": false,
+          "requires": []
+        },
+        "critical-chain": {
+          "description": "Print time-critical chain of systemd units delaying system boot",
+          "type": "token",
+          "combinable": false,
+          "requires": []
+        }
+      },
+      "combinations": {
+        "allowed": true,
+        "examples": [
+          "systemd-analyze",
+          "systemd-analyze time",
+          "systemd-analyze blame",
+          "systemd-analyze critical-chain"
+        ]
+      },
+      "output": {
+        "type": "boot_performance",
+        "important_fields": [
+          "boot_time",
+          "slowest_services"
+        ]
+      }
+    },
+    "hostnamectl": {
+      "description": "Query system hostname, operating system release, machine ID, and architecture",
+      "category": "system",
+      "use_when": [
+        "querying system hardware specs",
+        "OS version inquiry",
+        "virtualization verification"
+      ],
+      "risk": "safe",
+      "read_only": true,
+      "requires_sudo": false,
+      "requires_confirmation": true,
+      "options": {
+        "status": {
+          "description": "Display system identity, operating system name, kernel release, and CPU architecture",
+          "type": "token",
+          "combinable": false,
+          "requires": []
+        }
+      },
+      "combinations": {
+        "allowed": true,
+        "examples": [
+          "hostnamectl",
+          "hostnamectl status"
+        ]
+      },
+      "output": {
+        "type": "system_info",
+        "important_fields": [
+          "hostname",
+          "os",
+          "kernel",
+          "architecture"
+        ]
+      }
+    },
+    "networkctl": {
+      "description": "Query systemd-networkd network link states, operational carriers, and address configurations",
+      "category": "network",
+      "use_when": [
+        "network link debugging",
+        "networkd carrier verification",
+        "ethernet link status"
+      ],
+      "risk": "safe",
+      "read_only": true,
+      "requires_sudo": false,
+      "requires_confirmation": true,
+      "options": {
+        "status": {
+          "description": "Display operational status, IP addresses, gateway, and carrier for network interfaces",
+          "type": "token",
+          "combinable": false,
+          "requires": []
+        },
+        "list": {
+          "description": "List all network links with operational and setup states",
+          "type": "token",
+          "combinable": false,
+          "requires": []
+        }
+      },
+      "combinations": {
+        "allowed": true,
+        "examples": [
+          "networkctl",
+          "networkctl status",
+          "networkctl list"
+        ]
+      },
+      "output": {
+        "type": "network_links",
+        "important_fields": [
+          "link_id",
+          "link_name",
+          "operational_state"
+        ]
+      }
+    },
+    "localectl": {
+      "description": "Query system locale, keyboard mapping, and character set configuration",
+      "category": "system",
+      "use_when": [
+        "locale configuration errors",
+        "keyboard layout issues",
+        "character encoding problems"
+      ],
+      "risk": "safe",
+      "read_only": true,
+      "requires_sudo": false,
+      "requires_confirmation": true,
+      "options": {
+        "status": {
+          "description": "Display current system locale and console/X11 keyboard layout",
+          "type": "token",
+          "combinable": false,
+          "requires": []
+        }
+      },
+      "combinations": {
+        "allowed": true,
+        "examples": [
+          "localectl",
+          "localectl status"
+        ]
+      },
+      "output": {
+        "type": "locale_info",
+        "important_fields": [
+          "system_locale",
+          "vconsole_keymap",
+          "x11_layout"
+        ]
+      }
     }
   },
   "workflows": {
@@ -1387,7 +2398,14 @@
         "Ubuntu is running slowly",
         "system performance problem",
         "laptop performance is poor",
-        "computer is very slow"
+        "computer is very slow",
+        "why is my pc slow",
+        "why is my computer running so slow",
+        "linux is lagging",
+        "ui is freezing",
+        "mouse is stuttering",
+        "desktop is freezing",
+        "very slow system"
       ],
       "candidate_commands": [
         {
@@ -1452,7 +2470,12 @@
         "not enough space",
         "root partition is full",
         "no space left on device",
-        "disk space problem"
+        "disk space problem",
+        "disk space low",
+        "hard drive is full",
+        "filesystem full",
+        "out of disk space",
+        "storage running out"
       ],
       "candidate_commands": [
         {
@@ -1496,7 +2519,14 @@
         "too much memory usage",
         "high memory usage",
         "out of memory",
-        "swap is full"
+        "swap is full",
+        "ram usage is high",
+        "memory is full",
+        "out of ram",
+        "oom killer",
+        "why is my memory full",
+        "system running out of memory",
+        "high swap usage"
       ],
       "candidate_commands": [
         {
@@ -1576,7 +2606,11 @@
         "service will not start",
         "failed services",
         "systemd service failed",
-        "daemon is not running"
+        "daemon is not running",
+        "daemon crashed",
+        "service won't start",
+        "systemctl failed units",
+        "service error"
       ],
       "candidate_commands": [
         {
@@ -1629,7 +2663,13 @@
         "network is down",
         "cannot connect to internet",
         "DNS is not working",
-        "websites are not loading"
+        "websites are not loading",
+        "no internet connection",
+        "cannot access websites",
+        "dns not resolving",
+        "internet keeps dropping",
+        "ping failed",
+        "network unreachable"
       ],
       "candidate_commands": [
         {
@@ -1685,7 +2725,12 @@
         "wifi keeps disconnecting",
         "cannot connect to Wi-Fi",
         "wireless network missing",
-        "Wi-Fi adapter not found"
+        "Wi-Fi adapter not found",
+        "wifi not working",
+        "cannot connect to wifi",
+        "wifi disconnected",
+        "wireless interface down",
+        "wifi dropped"
       ],
       "candidate_commands": [
         {
@@ -1729,7 +2774,12 @@
         "Bluetooth is not working",
         "bluetooth keeps disconnecting",
         "cannot pair Bluetooth",
-        "Bluetooth device not found"
+        "Bluetooth device not found",
+        "bluetooth not working",
+        "cannot connect bluetooth",
+        "bluetooth audio stuttering",
+        "bluetooth device disconnected",
+        "bluetooth radio off"
       ],
       "candidate_commands": [
         {
@@ -1773,7 +2823,13 @@
         "audio is not working",
         "speakers are not working",
         "microphone is not working",
-        "no audio output"
+        "no audio output",
+        "audio not working",
+        "sound keeps cutting out",
+        "microphone not working",
+        "dummy output audio",
+        "pulseaudio problem",
+        "pipewire error"
       ],
       "candidate_commands": [
         {
@@ -2132,7 +3188,10 @@
         "overheating problem",
         "overheating",
         "computer is overheating",
-        "laptop overheated"
+        "laptop overheated",
+        "cpu temperature high",
+        "fan spinning fast",
+        "laptop burning hot"
       ],
       "candidate_commands": [
         {
@@ -2158,7 +3217,7 @@
       ],
       "decision_rules": [
         {
-          "condition": "sensor temperature exceeds 85\u00b0C",
+          "condition": "sensor temperature exceeds 85°C",
           "possible_problem": "High thermal pressure / possible thermal throttling"
         },
         {
@@ -2187,7 +3246,11 @@
         "laptop battery not holding charge",
         "battery discharge rate high",
         "battery dying fast",
-        "check battery status"
+        "check battery status",
+        "battery not charging",
+        "battery life is terrible",
+        "fast battery drain",
+        "laptop battery dying quickly"
       ],
       "candidate_commands": [
         {
@@ -2241,7 +3304,10 @@
         "CPU running at maximum",
         "CPU core pegged at 100%",
         "CPU usage is high",
-        "why is my cpu 100"
+        "why is my cpu 100",
+        "100% cpu usage",
+        "cpu is maxed out",
+        "high cpu load"
       ],
       "candidate_commands": [
         {
@@ -2352,7 +3418,10 @@
         "see listening ports",
         "is port open",
         "check listening ports",
-        "what is listening on my system"
+        "what is listening on my system",
+        "which ports are listening",
+        "find open ports",
+        "check socket status"
       ],
       "candidate_commands": [
         {
@@ -2533,6 +3602,206 @@
         {
           "condition": "a diagnostic command is unavailable or exits unsuccessfully",
           "possible_problem": "The result is incomplete; inspect the error and do not infer a root cause from missing evidence"
+        }
+      ]
+    },
+    "slow_boot_startup": {
+      "description": "Investigate slow Linux startup, long boot time, and slowest systemd startup services",
+      "triggers": [
+        "slow boot",
+        "boot is slow",
+        "system takes long time to boot",
+        "laptop takes forever to start",
+        "startup is slow",
+        "why does my computer take so long to turn on",
+        "slow startup",
+        "boot time is high",
+        "long boot time",
+        "why is my boot so slow",
+        "why does ubuntu take so long to boot",
+        "system startup delay",
+        "computer takes too long to boot",
+        "boot delay"
+      ],
+      "candidate_commands": [
+        {
+          "command_id": "systemd-analyze",
+          "options": [
+            "time"
+          ]
+        },
+        {
+          "command_id": "systemd-analyze",
+          "options": [
+            "blame"
+          ]
+        },
+        {
+          "command_id": "systemd-analyze",
+          "options": [
+            "critical-chain"
+          ]
+        },
+        {
+          "command_id": "systemctl",
+          "options": [
+            "--failed",
+            "--no-pager"
+          ]
+        }
+      ],
+      "decision_rules": [
+        {
+          "condition": "a system service takes excessive seconds to initialize",
+          "possible_problem": "A startup daemon is blocking userspace boot initialization"
+        },
+        {
+          "condition": "initrd or userspace boot time is high",
+          "possible_problem": "Storage I/O latency or heavy background services during startup"
+        },
+        {
+          "condition": "a service is failed during boot",
+          "possible_problem": "A startup service crashed or timed out during initialization"
+        }
+      ]
+    },
+    "os_distribution_info": {
+      "description": "Identify Linux operating system distribution, release version, codename, and kernel release",
+      "triggers": [
+        "what os am i running",
+        "check my linux version",
+        "what ubuntu version do i have",
+        "check kernel version",
+        "operating system details",
+        "system info",
+        "os info",
+        "what distro am i using",
+        "show os version",
+        "check distribution",
+        "which linux am i on",
+        "what version of ubuntu is this",
+        "show linux details"
+      ],
+      "candidate_commands": [
+        {
+          "command_id": "lsb_release",
+          "options": [
+            "-a"
+          ]
+        },
+        {
+          "command_id": "uname",
+          "options": [
+            "-a"
+          ]
+        },
+        {
+          "command_id": "hostnamectl",
+          "options": [
+            "status"
+          ]
+        }
+      ],
+      "decision_rules": [
+        {
+          "condition": "distribution release is identified",
+          "possible_problem": "Operating system identity and release version confirmed"
+        },
+        {
+          "condition": "kernel version is verified",
+          "possible_problem": "Running kernel release verified"
+        }
+      ]
+    },
+    "arp_network_neighbors": {
+      "description": "Inspect local network ARP neighbor table, LAN gateway reachability, and Layer 2 mappings",
+      "triggers": [
+        "local network device not reachable",
+        "cannot ping local router",
+        "arp cache problem",
+        "lan devices not showing up",
+        "local ip conflict",
+        "network neighbors not resolving",
+        "arp table issue",
+        "gateway unreachable",
+        "cannot reach router",
+        "lan connectivity problem"
+      ],
+      "candidate_commands": [
+        {
+          "command_id": "ip",
+          "options": [
+            "neigh"
+          ]
+        },
+        {
+          "command_id": "ip",
+          "options": [
+            "-brief",
+            "address"
+          ]
+        },
+        {
+          "command_id": "ip",
+          "options": [
+            "route"
+          ]
+        }
+      ],
+      "decision_rules": [
+        {
+          "condition": "neighbor state is FAILED or INCOMPLETE",
+          "possible_problem": "Local gateway or target LAN device is unreachable at Layer 2 MAC address level"
+        },
+        {
+          "condition": "neighbor cache is empty",
+          "possible_problem": "No local network ARP resolution traffic detected"
+        }
+      ]
+    },
+    "locale_timezone_keyboard": {
+      "description": "Inspect system locale, language encoding, character set, and keyboard layout configuration",
+      "triggers": [
+        "wrong system language",
+        "keyboard layout not working",
+        "locale error",
+        "character encoding problem",
+        "terminal showing weird characters",
+        "wrong timezone",
+        "keyboard mapping wrong",
+        "locale settings",
+        "wrong time",
+        "clock is wrong",
+        "time is incorrect"
+      ],
+      "candidate_commands": [
+        {
+          "command_id": "localectl",
+          "options": [
+            "status"
+          ]
+        },
+        {
+          "command_id": "timedatectl",
+          "options": [
+            "status"
+          ]
+        },
+        {
+          "command_id": "timedatectl",
+          "options": [
+            "timesync-status"
+          ]
+        }
+      ],
+      "decision_rules": [
+        {
+          "condition": "system locale is unconfigured or invalid",
+          "possible_problem": "Locale environment variable mismatch in /etc/default/locale"
+        },
+        {
+          "condition": "NTP synchronized is no",
+          "possible_problem": "Network time synchronization daemon is inactive or blocked"
         }
       ]
     }

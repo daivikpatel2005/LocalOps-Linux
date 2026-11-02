@@ -75,6 +75,7 @@ dmypy.json
 *.db-shm
 knowledge/*.db
 knowledge/*.sqlite3
+!knowledge/localops.db
 
 # ------------------------------------------------------------------------------
 # 6. Logs, Crash Dumps & Diagnostic Output

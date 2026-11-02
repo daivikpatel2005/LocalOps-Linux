@@ -411,3 +411,316 @@ def load_knowledge_from_db(db_path: Optional[Path | str] = None) -> dict[str, An
     finally:
         conn.close()
 
+
+def get_db_command(
+    command_id: str, db_path: Optional[Path | str] = None
+) -> Optional[dict[str, Any]]:
+    """Fetch a single command and its options/examples directly from SQLite."""
+    if not isinstance(command_id, str) or not command_id.strip():
+        return None
+
+    conn = get_connection(db_path)
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            SELECT command_id, description, category, use_when_json, risk,
+                   read_only, requires_sudo, requires_confirmation,
+                   output_type, output_key_fields_json
+            FROM commands
+            WHERE command_id = ?
+            """,
+            (command_id,),
+        )
+        row = cursor.fetchone()
+        if not row:
+            return None
+
+        # Options
+        cursor.execute(
+            """
+            SELECT option, description, option_type, combinable, requires_json
+            FROM command_options
+            WHERE command_id = ?
+            """,
+            (command_id,),
+        )
+        options: dict[str, Any] = {}
+        for opt_row in cursor.fetchall():
+            options[opt_row["option"]] = {
+                "description": opt_row["description"],
+                "type": opt_row["option_type"],
+                "combinable": bool(opt_row["combinable"]),
+                "requires": json.loads(opt_row["requires_json"]),
+            }
+
+        # Examples
+        cursor.execute(
+            "SELECT example FROM command_examples WHERE command_id = ?",
+            (command_id,),
+        )
+        examples = [ex_row["example"] for ex_row in cursor.fetchall()]
+
+        return {
+            "description": row["description"],
+            "category": row["category"],
+            "use_when": json.loads(row["use_when_json"]),
+            "risk": row["risk"],
+            "read_only": bool(row["read_only"]),
+            "requires_sudo": bool(row["requires_sudo"]),
+            "requires_confirmation": bool(row["requires_confirmation"]),
+            "options": options,
+            "combinations": {"examples": examples},
+            "output": {
+                "type": row["output_type"],
+                "key_fields": json.loads(row["output_key_fields_json"]),
+            },
+        }
+    finally:
+        conn.close()
+
+
+def get_db_all_commands(db_path: Optional[Path | str] = None) -> dict[str, Any]:
+    """Fetch all command definitions directly from SQLite."""
+    conn = get_connection(db_path)
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            SELECT command_id, description, category, use_when_json, risk,
+                   read_only, requires_sudo, requires_confirmation,
+                   output_type, output_key_fields_json
+            FROM commands
+            """
+        )
+        commands: dict[str, Any] = {}
+        for row in cursor.fetchall():
+            cid = row["command_id"]
+            commands[cid] = {
+                "description": row["description"],
+                "category": row["category"],
+                "use_when": json.loads(row["use_when_json"]),
+                "risk": row["risk"],
+                "read_only": bool(row["read_only"]),
+                "requires_sudo": bool(row["requires_sudo"]),
+                "requires_confirmation": bool(row["requires_confirmation"]),
+                "options": {},
+                "combinations": {"examples": []},
+                "output": {
+                    "type": row["output_type"],
+                    "key_fields": json.loads(row["output_key_fields_json"]),
+                },
+            }
+
+        # Options
+        cursor.execute(
+            "SELECT command_id, option, description, option_type, combinable, requires_json FROM command_options"
+        )
+        for opt_row in cursor.fetchall():
+            cid = opt_row["command_id"]
+            if cid in commands:
+                commands[cid]["options"][opt_row["option"]] = {
+                    "description": opt_row["description"],
+                    "type": opt_row["option_type"],
+                    "combinable": bool(opt_row["combinable"]),
+                    "requires": json.loads(opt_row["requires_json"]),
+                }
+
+        # Examples
+        cursor.execute("SELECT command_id, example FROM command_examples")
+        for ex_row in cursor.fetchall():
+            cid = ex_row["command_id"]
+            if cid in commands:
+                commands[cid]["combinations"]["examples"].append(ex_row["example"])
+
+        return commands
+    finally:
+        conn.close()
+
+
+def get_db_workflow(
+    workflow_id: str, db_path: Optional[Path | str] = None
+) -> Optional[dict[str, Any]]:
+    """Fetch a single workflow definition directly from SQLite."""
+    if not isinstance(workflow_id, str) or not workflow_id.strip():
+        return None
+
+    conn = get_connection(db_path)
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT workflow_id, description FROM workflows WHERE workflow_id = ?",
+            (workflow_id,),
+        )
+        row = cursor.fetchone()
+        if not row:
+            return None
+
+        # Triggers
+        cursor.execute(
+            "SELECT trigger FROM workflow_triggers WHERE workflow_id = ?",
+            (workflow_id,),
+        )
+        triggers = [t_row["trigger"] for t_row in cursor.fetchall()]
+
+        # Candidate commands
+        cursor.execute(
+            """
+            SELECT command_id, options_json
+            FROM workflow_candidates
+            WHERE workflow_id = ?
+            ORDER BY step_order ASC
+            """,
+            (workflow_id,),
+        )
+        candidates = [
+            {
+                "command_id": c_row["command_id"],
+                "options": json.loads(c_row["options_json"]),
+            }
+            for c_row in cursor.fetchall()
+        ]
+
+        # Decision rules
+        cursor.execute(
+            """
+            SELECT condition, possible_problem
+            FROM workflow_decision_rules
+            WHERE workflow_id = ?
+            ORDER BY id ASC
+            """,
+            (workflow_id,),
+        )
+        rules = [
+            {
+                "condition": r_row["condition"],
+                "possible_problem": r_row["possible_problem"],
+            }
+            for r_row in cursor.fetchall()
+        ]
+
+        return {
+            "description": row["description"],
+            "triggers": triggers,
+            "candidate_commands": candidates,
+            "decision_rules": rules,
+        }
+    finally:
+        conn.close()
+
+
+def get_db_all_workflows(db_path: Optional[Path | str] = None) -> dict[str, Any]:
+    """Fetch all workflows and their triggers, candidates, and decision rules directly from SQLite."""
+    conn = get_connection(db_path)
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT workflow_id, description FROM workflows")
+        workflows: dict[str, Any] = {}
+        for row in cursor.fetchall():
+            wid = row["workflow_id"]
+            workflows[wid] = {
+                "description": row["description"],
+                "triggers": [],
+                "candidate_commands": [],
+                "decision_rules": [],
+            }
+
+        # Triggers
+        cursor.execute("SELECT workflow_id, trigger FROM workflow_triggers")
+        for t_row in cursor.fetchall():
+            wid = t_row["workflow_id"]
+            if wid in workflows:
+                workflows[wid]["triggers"].append(t_row["trigger"])
+
+        # Candidates
+        cursor.execute(
+            "SELECT workflow_id, command_id, options_json FROM workflow_candidates ORDER BY step_order ASC"
+        )
+        for c_row in cursor.fetchall():
+            wid = c_row["workflow_id"]
+            if wid in workflows:
+                workflows[wid]["candidate_commands"].append(
+                    {
+                        "command_id": c_row["command_id"],
+                        "options": json.loads(c_row["options_json"]),
+                    }
+                )
+
+        # Decision rules
+        cursor.execute(
+            "SELECT workflow_id, condition, possible_problem FROM workflow_decision_rules ORDER BY id ASC"
+        )
+        for r_row in cursor.fetchall():
+            wid = r_row["workflow_id"]
+            if wid in workflows:
+                workflows[wid]["decision_rules"].append(
+                    {
+                        "condition": r_row["condition"],
+                        "possible_problem": r_row["possible_problem"],
+                    }
+                )
+
+        return workflows
+    finally:
+        conn.close()
+
+
+def get_db_triggers(db_path: Optional[Path | str] = None) -> list[tuple[str, str]]:
+    """Return all (workflow_id, trigger) pairs directly from SQLite."""
+    conn = get_connection(db_path)
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT workflow_id, trigger FROM workflow_triggers")
+        return [(row["workflow_id"], row["trigger"]) for row in cursor.fetchall()]
+    finally:
+        conn.close()
+
+
+def dump_db_to_json(
+    db_path: Optional[Path | str] = None, json_path: Optional[Path | str] = None
+) -> None:
+    """Export current SQLite tables to a formatted commands.json file atomically."""
+    j_path = Path(json_path) if json_path else DEFAULT_JSON_PATH
+    data = load_knowledge_from_db(db_path)
+    temp_json = j_path.with_suffix(".tmp")
+    with open(temp_json, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+        f.write("\n")
+    temp_json.replace(j_path)
+
+
+def is_database_populated(db_path: Optional[Path | str] = None) -> bool:
+    """Check if the SQLite database exists and contains command records."""
+    path = Path(db_path) if db_path else DEFAULT_DB_PATH
+    if not path.is_file():
+        return False
+    try:
+        conn = get_connection(path)
+        try:
+            cursor = conn.cursor()
+            cursor.execute("SELECT COUNT(*) FROM commands")
+            count = cursor.fetchone()[0]
+            return count > 0
+        finally:
+            conn.close()
+    except Exception:
+        return False
+
+
+def ensure_db_ready(
+    db_path: Optional[Path | str] = None, json_path: Optional[Path | str] = None
+) -> None:
+    """Ensure SQLite database is initialized and populated."""
+    path = Path(db_path) if db_path else DEFAULT_DB_PATH
+    if is_database_populated(path):
+        return
+
+    # If DB is not populated, try seeding from commands.json if available
+    j_path = Path(json_path) if json_path else DEFAULT_JSON_PATH
+    if j_path.is_file():
+        init_db(path)
+        sync_knowledge_to_db(j_path, path)
+    else:
+        init_db(path)
+
+
